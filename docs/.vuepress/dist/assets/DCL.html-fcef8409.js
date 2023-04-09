@@ -1,0 +1,33 @@
+import{_ as e}from"./image-20230405121108492-42ac7a06.js";import{_ as l,M as t,p,q as o,R as s,N as i,V as c,t as n,a1 as r}from"./framework-5866ffd3.js";const d={},k=s("h1",{id:"目录",tabindex:"-1"},[s("a",{class:"header-anchor",href:"#目录","aria-hidden":"true"},"#"),n(" 目录")],-1),u={class:"table-of-contents"},v=r('<h1 id="dcl-data-control-language" tabindex="-1"><a class="header-anchor" href="#dcl-data-control-language" aria-hidden="true">#</a> DCL（Data Control Language）</h1><p>数据控制语言，用来管理数据库用户、控制数据库的访问权限</p><p><strong>在MySQL中需要通过Host和User来唯一标识一 个用户。</strong></p><p>执行 select * from mysql.user; 查询结果如下</p><p><img src="'+e+`" alt="image-20230405121108492"></p><p><strong>含义解析：</strong></p><ul><li>Host：代表当前用户访问的主机, 如果为localhost, 仅代表只能够在当前本机访问，是不可以 远程访问的。</li><li>User：代表的是访问该数据库的用户名。</li></ul><h2 id="使用示例" tabindex="-1"><a class="header-anchor" href="#使用示例" aria-hidden="true">#</a> 使用示例</h2><ul><li>在MySQL中需要通过用户名@主机名的方式，来唯一标识一个用户</li><li>主机名可以使用 % 通配</li><li>多个权限之间，使用逗号分隔</li><li>授权时， 数据库名和表名可以使用 * 进行通配，代表所有</li></ul><div class="language-sql line-numbers-mode" data-ext="sql"><pre class="language-sql"><code><span class="token comment">-- 创建用户</span>
+<span class="token keyword">CREATE</span> <span class="token keyword">USER</span> <span class="token string">&#39;用户名&#39;</span><span class="token variable">@&#39;主机名&#39;</span> IDENTIFIED <span class="token keyword">BY</span> <span class="token string">&#39;密码&#39;</span><span class="token punctuation">;</span>
+
+<span class="token keyword">create</span> <span class="token keyword">user</span> <span class="token string">&#39;zhanglinwei&#39;</span><span class="token variable">@&#39;localhost&#39;</span> identified <span class="token keyword">by</span> <span class="token string">&#39;123456&#39;</span><span class="token punctuation">;</span>
+
+<span class="token keyword">create</span> <span class="token keyword">user</span> <span class="token string">&#39;linwei&#39;</span><span class="token variable">@&#39;%&#39;</span> identified <span class="token keyword">by</span> <span class="token string">&#39;123456&#39;</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- 修改用户密码</span>
+<span class="token keyword">ALTER</span> <span class="token keyword">USER</span> <span class="token string">&#39;用户名&#39;</span><span class="token variable">@&#39;主机名&#39;</span> IDENTIFIED <span class="token keyword">WITH</span> mysql_native_password <span class="token keyword">BY</span> <span class="token string">&#39;新密码&#39;</span> <span class="token punctuation">;</span>
+
+<span class="token keyword">alter</span> <span class="token keyword">user</span> <span class="token string">&#39;linwei&#39;</span><span class="token variable">@&#39;%&#39;</span> identified <span class="token keyword">with</span> mysql_native_password <span class="token keyword">by</span> <span class="token string">&#39;1234&#39;</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- 删除用户</span>
+<span class="token keyword">DROP</span> <span class="token keyword">USER</span> <span class="token string">&#39;用户名&#39;</span><span class="token variable">@&#39;主机名&#39;</span> <span class="token punctuation">;</span>
+
+<span class="token keyword">drop</span> <span class="token keyword">user</span> <span class="token string">&#39;zhanglinwei&#39;</span><span class="token variable">@&#39;localhost&#39;</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- 查询权限</span>
+<span class="token keyword">SHOW</span> GRANTS <span class="token keyword">FOR</span> <span class="token string">&#39;用户名&#39;</span><span class="token variable">@&#39;主机名&#39;</span> <span class="token punctuation">;</span>
+
+<span class="token keyword">show</span> grants <span class="token keyword">for</span> <span class="token string">&#39;linwei&#39;</span><span class="token variable">@&#39;%&#39;</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- 授予权限</span>
+<span class="token keyword">GRANT</span> 权限列表 <span class="token keyword">ON</span> 数据库名<span class="token punctuation">.</span>表名 <span class="token keyword">TO</span> <span class="token string">&#39;用户名&#39;</span><span class="token variable">@&#39;主机名&#39;</span><span class="token punctuation">;</span>
+
+<span class="token keyword">grant</span> <span class="token keyword">all</span> <span class="token keyword">on</span> ilovemysql<span class="token punctuation">.</span><span class="token operator">*</span> <span class="token keyword">to</span> <span class="token string">&#39;linwei&#39;</span><span class="token variable">@&#39;%&#39;</span><span class="token punctuation">;</span>
+
+<span class="token comment">-- 撤销权限</span>
+<span class="token keyword">REVOKE</span> 权限列表 <span class="token keyword">ON</span> 数据库名<span class="token punctuation">.</span>表名 <span class="token keyword">FROM</span> <span class="token string">&#39;用户名&#39;</span><span class="token variable">@&#39;主机名&#39;</span><span class="token punctuation">;</span>
+
+<span class="token keyword">revoke</span> <span class="token keyword">all</span> <span class="token keyword">on</span> ilovemysql<span class="token punctuation">.</span><span class="token operator">*</span> <span class="token keyword">from</span> <span class="token string">&#39;linwei&#39;</span><span class="token variable">@&#39;%&#39;</span><span class="token punctuation">;</span>
+
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div>`,10);function m(b,w){const a=t("router-link");return p(),o("div",null,[k,s("nav",u,[s("ul",null,[s("li",null,[i(a,{to:"#使用示例"},{default:c(()=>[n("使用示例")]),_:1})])])]),v])}const h=l(d,[["render",m],["__file","DCL.html.vue"]]);export{h as default};

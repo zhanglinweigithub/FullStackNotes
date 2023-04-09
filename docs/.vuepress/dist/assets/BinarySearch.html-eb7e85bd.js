@@ -1,0 +1,1 @@
+const e=JSON.parse('{"key":"v-48d96855","path":"/guide/Algorithm/search/BinarySearch.html","title":"二分查找","lang":"zh-CN","frontmatter":{},"headers":[],"git":{"updatedTime":1680957433000,"contributors":[{"name":"zhanglinwei","email":"3498729975@qq.com","commits":1}]},"filePathRelative":"guide/Algorithm/search/BinarySearch.md"}');export{e as data};

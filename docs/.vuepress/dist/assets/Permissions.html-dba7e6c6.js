@@ -1,0 +1,1 @@
+const e=JSON.parse('{"key":"v-29ec7e24","path":"/guide/MySQL/Permissions.html","title":"目录","lang":"zh-CN","frontmatter":{},"headers":[],"git":{"updatedTime":1680957433000,"contributors":[{"name":"zhanglinwei","email":"3498729975@qq.com","commits":1}]},"filePathRelative":"guide/MySQL/Permissions.md"}');export{e as data};

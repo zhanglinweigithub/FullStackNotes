@@ -1,0 +1,1 @@
+const t=JSON.parse('{"key":"v-4d6f3c39","path":"/guide/MySQL/LinuxInstall.html","title":"Linux 安装 MySQL","lang":"zh-CN","frontmatter":{},"headers":[],"git":{"updatedTime":1680957433000,"contributors":[{"name":"zhanglinwei","email":"3498729975@qq.com","commits":1}]},"filePathRelative":"guide/MySQL/LinuxInstall.md"}');export{t as data};

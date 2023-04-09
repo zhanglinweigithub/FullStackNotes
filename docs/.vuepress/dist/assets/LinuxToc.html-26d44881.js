@@ -1,0 +1,1 @@
+const e=JSON.parse('{"key":"v-2af6f1c4","path":"/guide/Linux/LinuxToc.html","title":"Linux的目录结构","lang":"zh-CN","frontmatter":{},"headers":[],"git":{"updatedTime":1680957433000,"contributors":[{"name":"zhanglinwei","email":"3498729975@qq.com","commits":1}]},"filePathRelative":"guide/Linux/LinuxToc.md"}');export{e as data};

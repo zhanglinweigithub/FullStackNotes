@@ -1,0 +1,1 @@
+const e=JSON.parse('{"key":"v-23780445","path":"/guide/MySQL/DCL.html","title":"目录","lang":"zh-CN","frontmatter":{},"headers":[{"level":2,"title":"使用示例","slug":"使用示例","link":"#使用示例","children":[]}],"git":{"updatedTime":1680957433000,"contributors":[{"name":"zhanglinwei","email":"3498729975@qq.com","commits":1}]},"filePathRelative":"guide/MySQL/DCL.md"}');export{e as data};
