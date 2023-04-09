@@ -61,6 +61,10 @@ const MysqlSidebars =  [
       text: "存储引擎",
       link: "/guide/MySQL/Engine.md",
     },
+    {
+      text: "索引",
+      link: "/guide/MySQL/MySQLIndex.md",
+    },
   ]
 //   "/guide/Spring": [
 //     {
