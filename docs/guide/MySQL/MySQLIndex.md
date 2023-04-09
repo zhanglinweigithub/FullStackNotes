@@ -306,7 +306,19 @@ explain select * from tb_user where phone = '17799990017' or age = 23;
 
 > 当`or`连接的条件，左右两侧字段都有索引时，索引才会生效。  
 
+### 空值判断
+
+判断`null`的情况不会走索引
+
+~~~sql
+select * from xxx where yyy is null;
+select * from xxx where yyy not is null;
+~~~
+
+都不会走索引
+
 ### 数据分布影响
+
 如果`MySQL`评估使用索引比全表更慢，则不使用索引  
 
 - 如果符合条件的记录数超过总记录数的一半，就不会走索引
@@ -351,3 +363,216 @@ explain select * from tb_user where phone = '17799990017' or age = 23;
 
 ❼索引的字段值无序时，不推荐建立索引，因为会造成页分裂，尤其是主键索引。
 
+## 索引优化
+
+如何判断一条`SQL`会不会走索引呢？这里需要使用一个工具：`explain`
+
+是`MySQL`自带的一个执行分析工具，可使用于`select、insert、update、delete、repleace`等语句上，需要使用时只需在`SQL`语句前加上一个`explain`关键字即可，然后`MySQL`会对应语句的执行计划列出
+
+![image-20230409155341219](./img/image-20230409155341219.png)
+
+::: tip
+
+重点关注以下几个字段
+
+- `key`：如果该值为空，则表示未使用索引查询，此时需要调整`SQL`或建立索引。
+- `type`：这个字段决定了查询的类型，如果为`index、all`就需要进行优化。
+- `rows`：这个字段代表着查询时可能会扫描的数据行数，较大时也需要进行优化。
+- `filtered`：这个字段代表着查询时，表中不会扫描的数据行占比，较小时需要进行优化。
+- `Extra`：这个字段代表着查询时的具体情况，在某些情况下需要根据对应信息进行优化。
+
+:::
+
+### id字段
+
+一条`SQL`语句可能会出现多步执行计划，所以会出现多个`ID`值，这个值越大，表示执行的优先级越高，同时还会出现四种情况
+
+- `ID`相同：当出现多个`ID`相同的执行计划时，从上往下挨个执行。
+- `ID`不同时：按照`ID`值从大到小依次执行。
+- `ID`有相同又有不同：先从到到小依次执行，碰到相同`ID`时从上往下执行。
+- `ID`为空：`ID=null`时，会放在最后执行。
+
+### select_type字段
+
+这个字段主要是说明当前查询语句所属的类型，以及在整条大的查询语句中，当前这个查询语句所属的位置
+
+取值如下：
+
+`SIMPLE`：简单的`select`查询语句，不包含`union`、子查询语句。
+
+`PRIMARY`：`union`或子查询语句中，最外层的主`select`语句。
+
+`SUBQUEPY`：包含在主`select`语句中的第一个子查询，如`select ... xx = (select ...)`。
+
+`DERIVED`：派生表，指包含在`from`中的子查询语句，如`select ... from (select ...)`。
+
+`DEPENDENT SUBQUEPY`：复杂`SQL`中的第一个`select`子查询（依赖于外部查询的结果集）。
+
+`UNCACHEABLE SUBQUERY`：不缓存结果集的子查询语句。
+
+`UNION`：多条语句通过`union`组成的查询中，第二个以及更后面的`select`语句。
+
+`UNION RESULT`：`union`的结果集。
+
+`DEPENDENT UNION`：含义同上，但是基于外部查询的结果集来查询的。
+
+`UNCACHEABLE UNION`：含义同上，但查询出的结果集不会加入缓存。
+
+`MATERIALIZED`：采用物化的方式执行的包含派生表的查询语句。
+
+### table字段
+
+表示当前这个执行计划是基于哪张表执行的，这里会写出表名
+
+`<derivenN>`：基于`id=N`的查询结果集，进一步检索数据。
+
+`<unionM,N>`：会出现在查询类型为`UNION RESULT`的计划中，表示结果由`id=M,N...`的查询组成。
+
+`<subqueryN>`：基于`id=N`的子查询结果，进一步进行数据检索。
+
+`<tableName>`：基于磁盘中已创建的某张表查询。
+
+### partitions字段
+
+该列的值表示检索数据的分区
+
+### type字段
+
+表示当前语句执行的类型，可能出现的值如下
+
+`all`：全表扫描，基于表中所有的数据，逐行扫描并过滤符合条件的数据。
+
+`index`：全索引扫描，和全表扫描类似，但这个是把索引树遍历一次，会比全表扫描要快。
+
+`range`：基于索引字段进行范围查询，如`between、<、>、in....`等操作时出现的情况。
+
+`index_subquery`：和上面含义相同，区别：这个是基于非主键、唯一索引字段进行`in`操作。
+
+`unique_subquery`：执行基于主键索引字段，进行`in`操作的子查询语句会出现的情况。
+
+`index_merge`：多条件查询时，组合使用多个索引来检索数据的情况。
+
+`ref_or_null`：基于次级(非主键)索引做条件查询时，该索引字段允许为`null`出现的情况。
+
+`fulltext`：基于全文索引字段，进行查询时出现的情况。
+
+`ref`：基于非主键或唯一索引字段查找数据时，会出现的情况。
+
+`eq_ref`：连表查询时，基于主键、唯一索引字段匹配数据的情况，会出现多次索引查找。
+
+`const`：通过索引一趟查找后就能获取到数据，基于唯一、主键索引字段查询数据时的情况。
+
+`system`：表中只有一行数据，这是`const`的一种特例。
+
+`null`：表中没有数据，无需经过任何数据检索，直接返回结果
+
+::: tip 重要
+
+这个字段的值很重要，它决定了`MySQL`在执行一条`SQL`时，访问数据的方式，性能从好到坏依次为
+
+完整：`null` → `system` → `const` → `eq_ref` → `ref` → `fulltext` → `ref_or_null` → `index_merge` → `unique_subquery` → `index_subquery` → `range` → `index` → `all`
+
+常见：`system` → `const` → `eq_ref` → `ref` → `fulltext` → `range` → `index` → `all`
+
+> 一般都会要求最好优化到`ref`级别，至少也要到`range`级别
+
+:::
+
+### possible_keys字段
+
+可能会用到哪些索引
+
+::: warning
+
+可能会用到并不代表一定会用
+
+:::
+
+### key字段
+
+具体使用的索引
+
+### key_len字段
+
+索引字段长度
+
+- 如果索引是前缀索引，这里则只会使用创建前缀索引时，声明的前`N`个字节来检索数据。
+- 如果是联合索引，这里只会显示当前`SQL`会用到的索引字段长度，可能不是全匹配的情况。
+- 如果一个索引字段的值允许为空，`key_len`的长度会为：索引字段长度`+1`
+
+### ref字段
+
+显示索引查找过程中，查询时会用到的常量或字段
+
+`const`：如果显示这个，则代表目前是在基于主键字段值或数据库已有的常量（如`null`）查询数据。
+
+- `select ... where 主键字段 = 主键值;`
+- `select ... where 索引字段 is null;`
+
+显示具体的字段名：表示目前会基于该字段查询数据。
+
+`func`：如果显示这个，则代表当与索引字段匹配的值是一个函数，如：
+
+- `select ... where 索引字段 = 函数(值);`
+
+### rows字段
+
+预计会扫描的行数，该值越小越好
+
+::: tip
+
+对于`InnoDB`表来说，其实有时并不够准确
+
+:::
+
+### filtered字段
+
+该值越小则表示执行时会扫描的数据量越大，取值范围是`0.00~100.00`
+
+### extra字段
+
+包含`MySQL`执行查询语句时的一些其他信息，这个信息对索引调优而言比较重要
+
+`Using index`：表示目前的查询语句，使用了索引覆盖机制拿到了数据。
+
+`Using where`：表示目前的查询语句无法从索引中获取数据，需要进一步做回表去拿表数据。
+
+`Using temporary`：表示`MySQL`在执行查询时，会创建一张临时表来处理数据。
+
+`Using filesort`：表示会以磁盘+内存完成排序工作，而完全加载数据到内存来完成排序。
+
+`Select tables optimized away`：表示查询过程中，对于索引字段使用了聚合函数。
+
+`Using where;Using index`：表示要返回的数据在索引中包含，但并不是索引的前导列，需要做回表获取数据。
+
+`NULL`：表示查询的数据未被索引覆盖，但`where`条件中用到了主键，可以直接读取表数据。
+
+`Using index condition`：和`Using where`类似，要返回的列未完全被索引覆盖，需要回表。
+
+`Using join buffer (Block Nested Loop)`：连接查询时驱动表不能有效的通过索引加快访问速度时，会使用`join-buffer`来加快访问速度，在内存中完成`Loop`匹配。
+
+`Impossible WHERE`：`where`后的条件永远不可能成立时提示的信息，如`where 1!=1`。
+
+`Impossible WHERE noticed after reading const tables`：基于唯一索引查询不存在的值时出现的提示。
+
+`const row not found`：表中不存在数据时会返回的提示。
+
+`distinct`：去重查询时，找到某个值的第一个值时，会将查找该值的工作从去重操作中移除。
+
+`Start temporary, End temporary`：表示临时表用于`DuplicateWeedout`半连接策略，也就是用来进行`semi-join`去重。
+
+`Using MRR`：表示执行查询时，使用了`MRR`机制读取数据。
+
+`Using index for skip scan`：表示执行查询语句时，使用了索引跳跃扫描机制读取数据。
+
+`Using index for group-by`：表示执行分组或去重工作时，可以基于某个索引处理。
+
+`FirstMatch`：表示对子查询语句进行`Semi-join`优化策略。
+
+`No tables used`：查询语句中不存在`from`子句时提示的信息，如`desc table_name;`。
+
+::: tip 性能排序
+
+`Using index → NULL → Using index condition → Using where → Using where;Using index → Using join buffer → Using filesort → Using MRR → Using index for skip scan → Using temporary → Strart temporary,End temporary → FirstMatch`
+
+:::

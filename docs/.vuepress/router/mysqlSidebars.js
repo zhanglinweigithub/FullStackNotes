@@ -65,6 +65,18 @@ const MysqlSidebars =  [
       text: "索引",
       link: "/guide/MySQL/MySQLIndex.md",
     },
+    {
+      text: "锁",
+      link: "/guide/MySQL/Lock.md",
+    },
+    {
+      text: "SQL优化",
+      link: "/guide/MySQL/SQLOptimization.md",
+    },
+    {
+      text: "MySQL常用工具",
+      link: "/guide/MySQL/Utils.md",
+    },
   ]
 //   "/guide/Spring": [
 //     {

@@ -15,13 +15,17 @@ actions:
 # 配置首页特性列表
 features:
 - title: 关于本项目
-  details: 本人为23届毕业生，开发本项目目的在于记录学习中遇到的问提和知识点
-- title: 小Tip
+  details: 本人为23届毕业生，开发本项目目的在于记录学习中遇到的问提和知识点，在需要时进行查询
+- title: 内容
+  details: Vue2、Vue3、JavaScript、TypeScript
+           Spring、SpringBoot、MyBatis、Nacos、Feign、Gateway、Linux、Redis、RabbitMQ、MySQL、JVM、Dcoker、Git
+- title: Tip
   details: 点击左上角Logo可返回此页，每个分类下均有专属侧边栏
 # - title: 不断更新
 #   details: 
 footerHtml: true
-footer: <a href="https://v2.vuepress.vuejs.org/zh/" target="_blank">本项目基于VuePress开发</a>
+footer: <span>个人邮箱：3498729975@qq.com</span><br/>
+        <a href="https://v2.vuepress.vuejs.org/zh/" target="_blank">本项目基于VuePress开发</a>
 
 ---
 
