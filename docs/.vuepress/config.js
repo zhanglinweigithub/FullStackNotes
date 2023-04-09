@@ -9,6 +9,7 @@ import sidebars from "./router/sidebars";
 
 
 export default {
+  base: '/FullStackNotes/',
   lang: "zh-CN", //语言设置
   title: "FullStackNotes", //所有页面标题的后缀
   description: "这是我的全栈学习笔记", //站点描述，它会被每个页面的 Frontmatter 中的 description 字段覆盖
