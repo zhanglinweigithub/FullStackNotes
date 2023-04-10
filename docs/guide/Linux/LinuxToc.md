@@ -1,3 +1,7 @@
+---
+title: Linux的目录结构
+---
+
 # Linux的目录结构
 
 ![image.png](./img/1674454377994-168fe220-29f1-4fec-a4f7-6076c5c3c7e4.png)

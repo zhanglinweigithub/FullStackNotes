@@ -1,5 +1,8 @@
 ---
 sidebar: 'auto'
+
+title: TypeScript
+
 ---
 # 目录
 

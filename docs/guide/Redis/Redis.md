@@ -1,3 +1,6 @@
+---
+title: Redis
+---
 Redis的官方网站地址：[https://redis.io/](https://redis.io/)
 
 ## SpringDataRedis依赖

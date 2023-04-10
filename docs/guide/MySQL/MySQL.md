@@ -1,6 +1,6 @@
 ---
 
-# title: 'MysSQL'
+title: MysSQL
 # level: [1,2,3,4]
 ---
 

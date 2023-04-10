@@ -1,3 +1,6 @@
+---
+title: RabbitMQ集群
+---
 # 目录
 
 [[toc]]

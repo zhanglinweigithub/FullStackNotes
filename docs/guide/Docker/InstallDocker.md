@@ -1,3 +1,6 @@
+---
+title: CentOS7安装Docker
+---
 # 目录
 
 [[toc]]

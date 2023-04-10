@@ -1,3 +1,6 @@
+---
+title: DML
+---
 # 目录
 [[toc]]
 # DML（Data Manipulation Language）

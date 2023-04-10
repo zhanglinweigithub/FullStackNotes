@@ -1,3 +1,6 @@
+---
+title: RabbitMQ基础
+---
 # 目录
 
 [[toc]]

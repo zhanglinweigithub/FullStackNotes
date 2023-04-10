@@ -1,5 +1,6 @@
 ---
 sidebar: 'auto'
+title: LeetCode刷题记录
 ---
 # 目录
 [[toc]]

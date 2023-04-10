@@ -134,6 +134,13 @@ const navbars = [
       }
     ]
   },
+  {
+    text: "Gitee",
+    
+        link: "https://gitee.com/linwei-zhang/full-stack-notes",
+      
+    
+  },
 ];
 
 export default navbars;

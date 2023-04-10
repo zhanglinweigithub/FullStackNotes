@@ -1,3 +1,6 @@
+---
+title: MySQL约束
+---
 # 目录
 [[toc]]
 # MySQL约束

@@ -1,3 +1,6 @@
+---
+title: DCL
+---
 # 目录
 [[toc]]
 # DCL（Data Control Language）

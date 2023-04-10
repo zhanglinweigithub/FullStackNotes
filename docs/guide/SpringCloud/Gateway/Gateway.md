@@ -1,3 +1,6 @@
+---
+title: Gateway
+---
 # 目录
 
 [[toc]]

@@ -1,3 +1,6 @@
+---
+title: 安装RabbitMQ
+---
 # 目录
 
 [[toc]]

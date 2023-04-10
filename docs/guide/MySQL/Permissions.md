@@ -1,3 +1,6 @@
+---
+title: MySQL权限
+---
 # 目录
 [[toc]]
 # MySQL常用权限

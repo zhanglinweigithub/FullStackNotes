@@ -1,3 +1,6 @@
+---
+title: DDL
+---
 # 目录
 [[toc]]
 # DDL(Data Definition Language)

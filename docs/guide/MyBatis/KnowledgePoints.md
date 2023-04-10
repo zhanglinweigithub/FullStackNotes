@@ -1,3 +1,6 @@
+---
+title: MyBatis知识点
+---
 # 目录
 
 [[toc]]

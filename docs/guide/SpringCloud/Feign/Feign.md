@@ -1,5 +1,8 @@
 ---
 sidebar: 'auto'
+
+title: Feign
+
 ---
 # 目录
 

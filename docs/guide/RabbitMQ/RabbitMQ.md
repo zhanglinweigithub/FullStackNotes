@@ -1,3 +1,6 @@
+---
+title: RabbitMQ
+---
 # 目录
 
 [[toc]]

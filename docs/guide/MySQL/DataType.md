@@ -1,3 +1,6 @@
+---
+title: MySQL的数据类型
+---
 # 目录
 [[toc]]
 # MySQL的数据类型

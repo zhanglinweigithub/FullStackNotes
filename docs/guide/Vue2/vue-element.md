@@ -1,5 +1,8 @@
 ---
 sidebar: 'auto'
+
+title: Vue-element
+
 ---
 # 目录
 
