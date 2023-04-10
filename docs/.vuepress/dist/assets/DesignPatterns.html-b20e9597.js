@@ -1,1 +1,0 @@
-const e=JSON.parse('{"key":"v-0f9e0456","path":"/guide/DesignPatterns/DesignPatterns.html","title":"","lang":"zh-CN","frontmatter":{},"headers":[],"git":{"updatedTime":1680957433000,"contributors":[{"name":"zhanglinwei","email":"3498729975@qq.com","commits":1}]},"filePathRelative":"guide/DesignPatterns/DesignPatterns.md"}');export{e as data};
