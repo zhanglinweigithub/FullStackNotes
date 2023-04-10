@@ -1,1 +1,0 @@
-const t=JSON.parse('{"key":"v-27adf311","path":"/guide/Algorithm/sort/InsertionSort.html","title":"插入排序","lang":"zh-CN","frontmatter":{},"headers":[],"git":{"updatedTime":1680957433000,"contributors":[{"name":"zhanglinwei","email":"3498729975@qq.com","commits":1}]},"filePathRelative":"guide/Algorithm/sort/InsertionSort.md"}');export{t as data};

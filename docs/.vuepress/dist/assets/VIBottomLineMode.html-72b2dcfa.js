@@ -1,1 +1,0 @@
-const e=JSON.parse('{"key":"v-3f1aedfd","path":"/guide/Linux/VIBottomLineMode.html","title":"底线命令快捷键","lang":"zh-CN","frontmatter":{},"headers":[],"git":{"updatedTime":1680957433000,"contributors":[{"name":"zhanglinwei","email":"3498729975@qq.com","commits":1}]},"filePathRelative":"guide/Linux/VIBottomLineMode.md"}');export{e as data};

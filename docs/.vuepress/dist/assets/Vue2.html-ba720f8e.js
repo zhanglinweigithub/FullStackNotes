@@ -1,1 +1,0 @@
-const e=JSON.parse('{"key":"v-f922ec14","path":"/guide/Vue2/Vue2.html","title":"vue 项目的运行流程","lang":"zh-CN","frontmatter":{},"headers":[],"git":{"updatedTime":1680957433000,"contributors":[{"name":"zhanglinwei","email":"3498729975@qq.com","commits":1}]},"filePathRelative":"guide/Vue2/Vue2.md"}');export{e as data};

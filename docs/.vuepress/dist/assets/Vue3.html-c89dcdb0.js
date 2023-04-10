@@ -1,1 +1,0 @@
-const e=JSON.parse('{"key":"v-1a081556","path":"/guide/Vue3/Vue3.html","title":"安装插件","lang":"zh-CN","frontmatter":{},"headers":[],"git":{"updatedTime":1680957433000,"contributors":[{"name":"zhanglinwei","email":"3498729975@qq.com","commits":1}]},"filePathRelative":"guide/Vue3/Vue3.md"}');export{e as data};
