@@ -16,7 +16,9 @@ export default {
   description: "这是我的全栈学习笔记", //站点描述，它会被每个页面的 Frontmatter 中的 description 字段覆盖
   head: [
     ["link", { rel: "icon", href: "/images/quantou.png" }],
-    ["link", { rel:"shortcut icon", type: "image/x-icon" ,href: "favicon.ico"}]
+    // <link rel=icon href=/vue-element-admin/favicon.ico>
+    // https://gitee.com/linwei-zhang/full-stack-notes/raw/pagesDist/favicon.ico
+    ["link", { rel:"shortcut icon", type: "favicon" ,href: "/images/favicon.ico"}]
   ], // 浏览器 favicon
   pagePatterns: ['**/*.md', '!**/README.md', '!.vuepress', '!node_modules'], // 排除所有的 README.md
   theme: defaultTheme({

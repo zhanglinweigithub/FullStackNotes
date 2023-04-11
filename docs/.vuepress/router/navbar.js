@@ -7,23 +7,6 @@ const navbars = [
     link: "/guide/JVM/ClassLoader.md",
   },
   {
-    text: "Java",
-    link: "/guide/Java/JavaBase.md",
-  },
-  {
-    text: "Spring系列",
-    children: [
-      {
-        text: "Spring",
-        link: "/guide/Spring/SpringIOC.md",
-      },
-      {
-        text: "SpringBoot",
-        link: "/guide/SpringBoot/JSON.md",
-      },
-    ]
-  },
-  {
     text: "微服务组件",
     children: [
       {
@@ -38,49 +21,84 @@ const navbars = [
         text: "Gateway",
         link: "/guide/SpringCloud/Gateway/Gateway.md",
       },
-    ]
-  },
-  {
-    text: "MyBatis",
-    link: "/guide/MyBatis/MyBatis.md",
-  },
-  {
-    text: "中间件",
-    children: [
-      {
-        text: "Redis",
-        link: "/guide/Redis/Redis.md",
-      },
-      {
-        text: "RabbitMQ",
-        link: "/guide/RabbitMQ/RabbitMQ.md",
-      },
-    ]
+    ],
   },
   {
     text: "数据库",
     children: [
       {
-        text: 'MySQL',
-        link: '/guide/MySQL/MySQL.md'
-      }
-    ]
-  },
-  {
-    text: "Git",
-    link: '/guide/Git/Git.md'
-  },
-  {
-    text: "Docker",
-    link: "/guide/Docker/DockerCommand.md",
+        text: "MySQL",
+        link: "/guide/MySQL/MySQL.md",
+      },
+    ],
   },
   {
     text: "Linux",
-    link: "/guide/Linux/LinuxBase.md",
+    children: [
+      {
+        text: "Linux",
+        link: "/guide/Linux/LinuxBase.md",
+      },
+      {
+        text: "Shell脚本",
+        link: "/guide/Others/ShellScript.md",
+      },
+    ],
   },
-  
   {
-    text: "前端",
+    text: "后端技术",
+    children: [
+      {
+        text: "Java",
+        link: "/guide/Java/JavaBase.md",
+      },
+      {
+        text: "MyBatis",
+        link: "/guide/MyBatis/MyBatis.md",
+      },
+      {
+        text: "Spring系列",
+        children: [
+          {
+            text: "Spring",
+            link: "/guide/Spring/SpringIOC.md",
+          },
+          {
+            text: "SpringBoot",
+            link: "/guide/SpringBoot/JSON.md",
+          },
+        ],
+      },
+      {
+        text: "中间件",
+        children: [
+          {
+            text: "Redis",
+            link: "/guide/Redis/Redis.md",
+          },
+          {
+            text: "RabbitMQ",
+            link: "/guide/RabbitMQ/RabbitMQ.md",
+          },
+        ],
+      },
+      {
+        text: "工具",
+        children: [
+          {
+            text: "Git",
+            link: "/guide/Git/Git.md",
+          },
+          {
+            text: "Docker",
+            link: "/guide/Docker/DockerCommand.md",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    text: "前端技术",
     children: [
       {
         text: "Vue2",
@@ -98,7 +116,7 @@ const navbars = [
         text: "TypeScript",
         link: "/guide/TypeScript/TypeScript.md",
       },
-    ]
+    ],
   },
   // {
   //   text: "设计模式",
@@ -123,7 +141,7 @@ const navbars = [
       //   text: "华为机试",
       //   link: "/ctest.md",
       // },
-    ]
+    ],
   },
   {
     text: "项目",
@@ -131,15 +149,12 @@ const navbars = [
       {
         text: "vue-element-admin",
         link: "/guide/Vue2/Vue-element.md",
-      }
-    ]
+      },
+    ],
   },
   {
     text: "Gitee",
-    
-        link: "https://gitee.com/linwei-zhang/full-stack-notes",
-      
-    
+    link: "https://gitee.com/linwei-zhang/full-stack-notes",
   },
 ];
 
