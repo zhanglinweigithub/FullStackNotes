@@ -21,6 +21,10 @@ const SpringBootSidebars = [
     link: "/guide/SpringBoot/Listener.md",
   },
   {
+    text: "定时任务",
+    link: "/guide/SpringBoot/Scheduled.md",
+  },
+  {
     text: "配置日志",
     link: "/guide/SpringBoot/Log.md",
   },
