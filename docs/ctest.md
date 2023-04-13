@@ -1,48 +1,59 @@
+---
+sidebar: 'auto'
+title: 
+---
 
-# 全部内容如下，不断学习、不断积累、不断更新
+<img src="/images/favicon.ico" height="300" style="display: block; margin: 0 auto;"/>
 
-# [JVM](./guide/JVM/ClassLoader.md)
+## ☕️Java
 
-# [JAVA](./guide/Java/JavaBase.md)
+- [Java 基础](./guide/Java/JavaBase.md)
+- [Java 集合](./guide/Java/Collection.md)
+- Java 并发(编写中)
+- [Java IO](./guide/Java/JavaIO.md)
+- [Java 虚拟机](./guide/Java/JVM.md)
 
-# [Spring](./guide/Spring/SpringIOC.md)
+## 💾数据库
 
-# [SpringBoot](./guide/SpringBoot/JSON.md)
+- [MySQL](./guide/MySQL/MySQL.md)
 
-# [Nacos](./guide/SpringCloud/Nacos/InstallNacos.md)
+## 🚀Java框架
+- [Spring](./guide/JavaFrame/Spring.md)
+- [SpringBoot](./guide/JavaFrame/SpringBoot.md)
+- [MyBatis](./guide/JavaFrame/MyBatis.md)
 
-# [Feign](./guide/SpringCloud/Feign/Feign.md)
+## 🔩中间件
+- [Redis](./guide/Redis/Redis.md)
+- [RabbitMQ](./guide/RabbitMQ/RabbitMQ.md)
 
-# [Gateway](./guide/SpringCloud/Gateway/Gateway.md)
+## ⛽️微服务组件
+- [Nacos](./guide/SpringCloud/Nacos/Nacos.md)
+- [Feign](./guide/SpringCloud/Feign/Feign.md)
+- [Gateway](./guide/SpringCloud/Gateway/Gateway.md)
 
-# [MyBatis](./guide/MyBatis/MyBatis.md)
+## 🧰工具
+- [Git](./guide/Git/Git.md)
+- [Docker](./guide/Docker/Docker.md)
 
-# [Redis](./guide/Redis/Redis.md)
+## 🚪前端技术
+- [Vue2](./guide/Vue2/Vue2.md)
+- [Vue3](./guide/Vue3/Vue3.md)
+- [JavaScript](./guide/JavaScript/JavaScript.md)
+- [TypeScript](./guide/TypeScript/TypeScript.md)
 
-# [RabbitMQ](./guide/RabbitMQ/RabbitMQ.md)
+## ✏️算法
+- [基础](./guide/Algorithm/AlgorithmBase.md)
+- LeetCode(编写中)
+- [刷题记录](./guide/Algorithm/LeetCodeRecord.md)
 
-# [MySQL](./guide/MySQL/MySQL.md)
+## ⚓️Linux
+- [Linux](./guide/Linux/Linux.md)
+- [Shell脚本](./guide/Shell/ShellScript.md)
 
-# [Git](./guide/Git/Git.md)
+## 📚项目
+- [vue-element-admin](./guide/Project/Vue-element.md)
 
-# [Docker](./guide/Docker/Docker.md)
-
-# [Linux](./guide/Linux/LinuxBase.md)
-
-# [Vue2](./guide/Vue2/Vue2.md)
-
-# [Vue3](./guide/Vue3/Vue3.md)
-
-# [JavaScript](./guide/JavaScript/VariablesAndTypes.md)
-
-# [TypeScript](./guide/TypeScript/TypeScript.md)
-
-# [查找算法](./guide/Algorithm/search/BinarySearch.md)
-
-# [排序算法](./guide/Algorithm/sort/BubbleSort.md)
-
-# [LeetCode刷题记录](./guide/Algorithm/LeetCode.md)
-
-# [vue-element-admin](./guide/Vue2/Vue-element.md)
-
+## 📄MarkDown
+- [MarkDown 语法](./guide/MarkDown/MarkDownCMD.md)
+- [MarkDown EMOJI](./guide/MarkDown/MarkDownIcon.md)
 

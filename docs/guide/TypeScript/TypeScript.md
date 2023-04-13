@@ -4,10 +4,6 @@ sidebar: 'auto'
 title: TypeScript
 
 ---
-# 目录
-
-[[toc]]
-
 # TypeScript
 
 TypeScript属于静态类型，在代码运行前，就对他的行为作出预测
@@ -28,9 +24,9 @@ test("hello")//不会报错
 test(123) //会报错
 ~~~
 
-# TypeScript编译器
+## TypeScript编译器
 
-## 安装
+### 安装
 
 ```cmd
 npm install -g sypescript

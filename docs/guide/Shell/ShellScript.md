@@ -2,11 +2,9 @@
 title: Shell脚本
 sidebar: 'auto'
 ---
-# 目录
 
-[[toc]]
 
-## Shell脚本
+# Shell脚本
 
 `Linux`提供的 `Shell`解析器：
 

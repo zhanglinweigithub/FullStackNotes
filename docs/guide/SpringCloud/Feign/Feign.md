@@ -4,11 +4,9 @@ sidebar: 'auto'
 title: Feign
 
 ---
-# 目录
+# Feign
 
-[[toc]]
-
-## Feign远程调用
+## 一、Feign远程调用
 
 先来看我们以前利用`RestTemplate`发起远程调用的代码：
 
@@ -192,7 +190,7 @@ public class DefaultFeignConfiguration  {
 
 
 
-## Feign使用优化
+## 二、Feign使用优化
 
 `Feign`底层发起`http`请求，依赖于其它的框架。其底层客户端实现包括：
 
@@ -270,7 +268,7 @@ feign:
 
 
 
-## 最佳实践
+## 三、最佳实践
 
 所谓最近实践，就是使用过程中总结的经验，最好的一种使用方式。
 

@@ -3,23 +3,44 @@
 // children：子页面
 const navbars = [
   {
-    text: "JVM",
-    link: "/guide/JVM/ClassLoader.md",
-  },
-  {
-    text: "微服务组件",
+    text: "Java",
     children: [
       {
-        text: "Nacos",
-        link: "/guide/SpringCloud/Nacos/InstallNacos.md",
+        text: "Java基础",
+        link: "/guide/Java/JavaBase.md",
       },
       {
-        text: "Feign",
-        link: "/guide/SpringCloud/Feign/Feign.md",
+        text: "Java集合",
+        link: "/guide/Java/Collection.md",
+      },
+      // {
+      //   text: "Java并发",
+      //   link: "/guide/Java/JavaBase.md",
+      // },
+      {
+        text: "JavaIO",
+        link: "/guide/Java/JavaIO.md",
       },
       {
-        text: "Gateway",
-        link: "/guide/SpringCloud/Gateway/Gateway.md",
+        text: "Java虚拟机",
+        link: "/guide/Java/JVM.md",
+      },
+    ]
+  },
+  {
+    text: "Java框架",
+    children: [
+      {
+        text: "Spring",
+        link: "/guide/JavaFrame/Spring.md",
+      },
+      {
+        text: "SpringBoot",
+        link: "/guide/JavaFrame/SpringBoot.md",
+      },
+      {
+        text: "MyBatis",
+        link: "/guide/JavaFrame/MyBatis.md",
       },
     ],
   },
@@ -33,67 +54,45 @@ const navbars = [
     ],
   },
   {
-    text: "Linux",
+    text: "中间件",
     children: [
       {
-        text: "Linux",
-        link: "/guide/Linux/LinuxBase.md",
+        text: "Redis",
+        link: "/guide/Redis/Redis.md",
       },
       {
-        text: "Shell脚本",
-        link: "/guide/Others/ShellScript.md",
+        text: "RabbitMQ",
+        link: "/guide/RabbitMQ/RabbitMQ.md",
       },
     ],
   },
   {
-    text: "后端技术",
+    text: "微服务组件",
     children: [
       {
-        text: "Java",
-        link: "/guide/Java/JavaBase.md",
+        text: "Nacos",
+        link: "/guide/SpringCloud/Nacos/Nacos.md",
       },
       {
-        text: "MyBatis",
-        link: "/guide/MyBatis/MyBatis.md",
+        text: "Feign",
+        link: "/guide/SpringCloud/Feign/Feign.md",
       },
       {
-        text: "Spring系列",
-        children: [
-          {
-            text: "Spring",
-            link: "/guide/Spring/SpringIOC.md",
-          },
-          {
-            text: "SpringBoot",
-            link: "/guide/SpringBoot/JSON.md",
-          },
-        ],
+        text: "Gateway",
+        link: "/guide/SpringCloud/Gateway/Gateway.md",
+      },
+    ],
+  },
+  {
+    text: "工具",
+    children: [
+      {
+        text: "Git",
+        link: "/guide/Git/Git.md",
       },
       {
-        text: "中间件",
-        children: [
-          {
-            text: "Redis",
-            link: "/guide/Redis/Redis.md",
-          },
-          {
-            text: "RabbitMQ",
-            link: "/guide/RabbitMQ/RabbitMQ.md",
-          },
-        ],
-      },
-      {
-        text: "工具",
-        children: [
-          {
-            text: "Git",
-            link: "/guide/Git/Git.md",
-          },
-          {
-            text: "Docker",
-            link: "/guide/Docker/DockerCommand.md",
-          },
-        ],
+        text: "Docker",
+        link: "/guide/Docker/Docker.md",
       },
     ],
   },
@@ -110,7 +109,7 @@ const navbars = [
       },
       {
         text: "JavaScript",
-        link: "/guide/JavaScript/VariablesAndTypes.md",
+        link: "/guide/JavaScript/JavaScript.md",
       },
       {
         text: "TypeScript",
@@ -118,24 +117,20 @@ const navbars = [
       },
     ],
   },
-  // {
-  //   text: "设计模式",
-  //   link: "/guide/DesignPatterns/DesignPatterns.md",
-  // },
   {
     text: "算法",
     children: [
       {
-        text: "查找算法",
-        link: "/guide/Algorithm/search/BinarySearch.md",
+        text: "基础",
+        link: "/guide/Algorithm/AlgorithmBase.md",
       },
+      // {
+      //   text: "LeetCode",
+      //   link: "/guide/Algorithm/sort/BubbleSort.md",
+      // },
       {
-        text: "排序算法",
-        link: "/guide/Algorithm/sort/BubbleSort.md",
-      },
-      {
-        text: "LeetCode刷题记录",
-        link: "/guide/Algorithm/LeetCode.md",
+        text: "刷题记录",
+        link: "/guide/Algorithm/LeetCodeRecord.md",
       },
       // {
       //   text: "华为机试",
@@ -144,14 +139,49 @@ const navbars = [
     ],
   },
   {
+    text: "Linux",
+    children: [
+      {
+        text: "Linux",
+        link: "/guide/Linux/Linux.md",
+      },
+      {
+        text: "Shell脚本",
+        link: "/guide/Shell/ShellScript.md",
+      },
+    ],
+  },
+  {
     text: "项目",
     children: [
       {
         text: "vue-element-admin",
-        link: "/guide/Vue2/Vue-element.md",
+        link: "/guide/Project/Vue-element.md",
       },
     ],
   },
+  {
+    text: "其它",
+    children: [
+      {
+        text: "MarkDown",
+        children: [
+          {
+            text: "MarkDown语法",
+            link: "/guide/MarkDown/MarkDownCMD.md",
+          },
+          {
+            text: "MarkDown图标",
+            link: "/guide/MarkDown/MarkDownIcon.md",
+          }
+        ]
+      },
+    ],
+  },
+  // {
+  //   text: "设计模式",
+  //   link: "/guide/DesignPatterns/DesignPatterns.md",
+  // },
   {
     text: "Gitee",
     link: "https://gitee.com/linwei-zhang/full-stack-notes",

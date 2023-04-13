@@ -14,8 +14,8 @@ SpringBoot内部已经继承了 `slf4j` ，配置即用
 ~~~yaml
 logging:
 	pattern:
-		console: %d{yyyy/MM/dd-HH:mm:ss} [%thread] %-5level %logger- %msg%n # 控制台的输出格式 
-		file: %d{yyyy/MM/dd-HH:mm} [%thread] %-5level %logger- %msg%n # 日志文件的输出格式  
+		console: "%d{yyyy/MM/dd-HH:mm:ss} [%thread] %-5level %logger- %msg%n" # 控制台的输出格式 
+		file: "%d{yyyy/MM/dd-HH:mm} [%thread] %-5level %logger- %msg%n" # 日志文件的输出格式  
 	file: # 日志输出到文件中
 		path: ./logs # 指定输出的文件为当前项目路径的 logs 文件下，默认生成的日志文件为 spring.log 
 	config: logback-spring.xml # 指定项目启动的时候，读取哪个配置文件
