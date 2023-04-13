@@ -17,10 +17,10 @@ export default {
   title: "FullStackNotes", //所有页面标题的后缀
   description: "这是我的全栈学习笔记", //站点描述，它会被每个页面的 Frontmatter 中的 description 字段覆盖
   head: [
-    ["link", { rel: "icon", href: "/full-stack-notes/images/quantou.png" }],
+    ["link", { rel: "icon", href: "/FullStackNotes/images/quantou.png" }],
 
     // 部署gitee的favicon.ico
-    ["link", { rel:"shortcut icon", type: "favicon" ,href: "/full-stack-notes/images/favicon.ico"}]
+    // ["link", { rel:"shortcut icon", type: "favicon" ,href: "/full-stack-notes/images/favicon.ico"}]
     
     // 部署github的favicon.ico
     // ["link", { rel:"shortcut icon", type: "favicon" ,href: "/FullStackNotes/images/favicon.ico"}]
