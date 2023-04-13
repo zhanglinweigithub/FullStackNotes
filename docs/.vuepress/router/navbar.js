@@ -13,10 +13,10 @@ const navbars = [
         text: "Java集合",
         link: "/guide/Java/Collection.md",
       },
-      // {
-      //   text: "Java并发",
-      //   link: "/guide/Java/JavaBase.md",
-      // },
+      {
+        text: "Java并发",
+        link: "/guide/Java/JavaJUC.md",
+      },
       {
         text: "JavaIO",
         link: "/guide/Java/JavaIO.md",
@@ -164,6 +164,23 @@ const navbars = [
     text: "其它",
     children: [
       {
+        text: "设计模式",
+        children: [
+          {
+            text: "行为型",
+            link: "/guide/DesignPatterns/Behavior.md",
+          },
+          {
+            text: "创建型",
+            link: "/guide/DesignPatterns/Create.md",
+          },
+          {
+            text: "结构型",
+            link: "/guide/DesignPatterns/Structure.md",
+          }
+        ]
+      },
+      {
         text: "MarkDown",
         children: [
           {
@@ -178,10 +195,6 @@ const navbars = [
       },
     ],
   },
-  // {
-  //   text: "设计模式",
-  //   link: "/guide/DesignPatterns/DesignPatterns.md",
-  // },
   {
     text: "Gitee",
     link: "https://gitee.com/linwei-zhang/full-stack-notes",

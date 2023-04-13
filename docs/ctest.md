@@ -9,7 +9,7 @@ title:
 
 - [Java 基础](./guide/Java/JavaBase.md)
 - [Java 集合](./guide/Java/Collection.md)
-- Java 并发(编写中)
+- [Java 并发](./guide/Java/JavaJUC.md)
 - [Java IO](./guide/Java/JavaIO.md)
 - [Java 虚拟机](./guide/Java/JVM.md)
 
@@ -30,6 +30,11 @@ title:
 - [Nacos](./guide/SpringCloud/Nacos/Nacos.md)
 - [Feign](./guide/SpringCloud/Feign/Feign.md)
 - [Gateway](./guide/SpringCloud/Gateway/Gateway.md)
+
+## 📏设计模式
+- [行为型](./guide/DesignPatterns/Behavior.md)
+- [创建型](./guide/DesignPatterns/Create.md)
+- [结构型](./guide/DesignPatterns/Structure.md)
 
 ## 🧰工具
 - [Git](./guide/Git/Git.md)
