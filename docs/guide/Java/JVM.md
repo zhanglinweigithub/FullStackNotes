@@ -501,7 +501,7 @@ java -Xms1M -Xmx2M HackTheJava
 
 栈帧用于存储局部变量表、操作数栈、常量池引用等信息
 
-![image-20230414145538513](./img/JVM.md)
+![image-20230414155512638](./img/image-20230414155512638.png)
 
 ::: tip
 
