@@ -338,12 +338,38 @@ after
 - 把创建完成的实现 `Runnable`/`Callable`接口的 对象直接交给 `ExecutorService` 执行: 
   - `ExecutorService.execute（Runnable command）`
   - 也可以把 `Runnable` 对象或`Callable` 对象提交给 `ExecutorService` 执行（`ExecutorService.submit（Runnable task）`
-  - 或 `ExecutorService.submit（Callable <T> task）`。
-- 如果执行 `ExecutorService.submit（…）`，`ExecutorService` 将返回一个实现`Future`接口的对象
+  - 或 `ExecutorService.submit（Callable task）`。
+- 如果执行 `ExecutorService.submit（）`，`ExecutorService` 将返回一个实现`Future`接口的对象
   - 执行 `execute()`方法和 `submit()`方法的区别，`submit()`会返回一个 `FutureTask 对象`
-  - `由于 FutureTask` 实现了 `Runnable`，我们也可以创建 `FutureTask`，然后直接交给 `ExecutorService` 执行。
+  - 由于 `FutureTask` 实现了 `Runnable`，我们也可以创建 `FutureTask`，然后直接交给 `ExecutorService` 执行。
 - 最后，主线程可以执行 `FutureTask.get()`方法来等待任务执行完成。
   - 主线程也可以执行 `FutureTask.cancel（boolean mayInterruptIfRunning）`来取消此任务的执行。
+
+一共可接收7个参数
+
+- `corePoolSize`：线程池的核心线程数量
+- `maximumPoolSize`：线程池的最大线程数
+- `keepAliveTime`：当线程数大于核心线程数时，多余的空闲线程存活的最长时间
+- `unit`：时间单位
+- `workQueue`：任务队列，用来储存等待执行任务的队列
+- `threadFactory`：线程工厂，用来创建线程
+- `handler`：拒绝策略，当提交的任务过多而不能及时处理时，拒绝策略是怎样的
+
+::: tip
+
+`corePoolSize`，`maximumPoolSize` ，`workQueue`，比较重要哦
+
+:::
+
+::: warning 注意
+
+临时线程的创建时机：当所有核心线程都在忙，且任务队列满了，这时在有新的任务来才会创建临时线程去处理。
+
+临时线程的销毁：当临时线程空闲时，经过设定的`keepAliveTime`时间后，才会销毁，而不是立即销毁。
+
+入队时机：新任务来的时候会先判断当前运行的线程数量是否达到核心线程数，如果达到的话，新任务就会被存放在队列
+
+:::
 
 ### ThreadPoolExecutor
 
@@ -412,7 +438,7 @@ public ThreadPoolExecutor(int corePoolSize,
 
 - `AbortPolicy` ：抛出 `RejectedExecutionException`来拒绝新任务的处理。（默认）
   - `ThreadPoolExecutor.AbortPolicy`
-- `CallerRunsPolicy` ：调用执行自己的线程运行任务，也就是直接在调用`execute`方法的线程中运行(`run`)被拒绝的任务，如果执行程序已关闭，则会丢弃该任务。因此这种策略会降低对于新任务提交速度，影响程序的整体性能。如果您的应用程序可以承受此延迟并且你要求任何一个任务请求都要被执行的话，你可以选择这个策略。
+- `CallerRunsPolicy` ：调用执行自己的线程运行任务，也就是直接在调用`execute`方法的线程中运行被拒绝的任务，如果执行程序已关闭，则会丢弃该任务。因此这种策略会降低对于新任务提交速度，影响程序的整体性能。如果您的应用程序可以承受此延迟并且你要求任何一个任务请求都要被执行的话，你可以选择这个策略。
   - `ThreadPoolExecutor.CallerRunsPolicy`
 - `DiscardPolicy` ：不处理新任务，直接丢弃掉。
   - `ThreadPoolExecutor.DiscardPolicy`
@@ -428,7 +454,7 @@ public ThreadPoolExecutor(int corePoolSize,
 - `SynchronousQueue`：同步队列；
   - 没有容量，不存储元素；
   - 如果有空闲线程，则使用空闲线程来处理，否则新建一个线程来处理任务
-  - 线程数是可以无限扩展的，可能会创建大量线程，从而导致 OOM
+  - 线程数是可以无限扩展的，可能会创建大量线程，从而导致 `OOM`
 - `DelayedWorkQueue`：延迟阻塞队列；
   - 内部采用的是“堆”的数据结构，按照延迟的时间长短对任务进行排序
   - 每次出队的任务都是当前队列中执行时间最靠前的
@@ -455,49 +481,9 @@ public ThreadPoolExecutor(int corePoolSize,
 
 ::: tip
 
-**《阿里巴巴 Java 开发手册》** 强制线程池不允许使用 `Executors` 去创建，而是通过 `ThreadPoolExecutor` 构造函数的方式，这样的创建方式让开发者更加明确线程池的运行规则，规避资源耗尽的风险
+**阿里巴巴Java手册**强制线程池不允许使用 `Executors` 去创建，而是通过 `ThreadPoolExecutor` 构造函数的方式，这样的创建方式让我们更加明确线程池的运行规则，规避资源耗尽的风险
 
 :::
-
-#### 使用Executors创建线程池的弊端
-
-`FixedThreadPool` 和 `SingleThreadExecutor` ： 使用的是无界的 `LinkedBlockingQueue`，任务队列最大长度为 `Integer.MAX_VALUE`,可能堆积大量的请求，从而导致 OOM。
-
-`CachedThreadPool` ：使用的是同步队列 `SynchronousQueue`, 允许创建的线程数量为 `Integer.MAX_VALUE` ，可能会创建大量线程，从而导致 OOM。
-
-`ScheduledThreadPool` 和 `SingleThreadScheduledExecutor` : 使用的无界的延迟阻塞队列`DelayedWorkQueue`，任务队列最大长度为 `Integer.MAX_VALUE`,可能堆积大量的请求，从而导致 OOM。
-
-~~~java
-// 无界队列 LinkedBlockingQueue
-public static ExecutorService newFixedThreadPool(int nThreads) {
-
-    return new ThreadPoolExecutor(nThreads, nThreads,0L, TimeUnit.MILLISECONDS,new LinkedBlockingQueue<Runnable>());
-
-}
-
-// 无界队列 LinkedBlockingQueue
-public static ExecutorService newSingleThreadExecutor() {
-
-    return new FinalizableDelegatedExecutorService (new ThreadPoolExecutor(1, 1,0L, TimeUnit.MILLISECONDS,new LinkedBlockingQueue<Runnable>()));
-
-}
-
-// 同步队列 SynchronousQueue，没有容量，最大线程数是 Integer.MAX_VALUE`
-public static ExecutorService newCachedThreadPool() {
-
-    return new ThreadPoolExecutor(0, Integer.MAX_VALUE,60L, TimeUnit.SECONDS,new SynchronousQueue<Runnable>());
-
-}
-
-// DelayedWorkQueue（延迟阻塞队列）
-public static ScheduledExecutorService newScheduledThreadPool(int corePoolSize) {
-    return new ScheduledThreadPoolExecutor(corePoolSize);
-}
-public ScheduledThreadPoolExecutor(int corePoolSize) {
-    super(corePoolSize, Integer.MAX_VALUE, 0, NANOSECONDS,
-          new DelayedWorkQueue());
-}
-~~~
 
 ### 方法对比
 
@@ -754,7 +740,7 @@ public ScheduledThreadPoolExecutor(int corePoolSize) {
 
 ### 4、正确配置线程池参数
 
-如果我们设置的线程池数量太小的话，如果同一时间有大量任务/请求需要处理，可能会导致大量的请求/任务在任务队列中排队等待执行，甚至会出现任务队列满了之后任务/请求无法处理的情况，或者大量任务堆积在任务队列导致 OOM。这样很明显是有问题的，CPU 根本没有得到充分利用。
+如果我们设置的线程池数量太小的话，如果同一时间有大量任务/请求需要处理，可能会导致大量的请求/任务在任务队列中排队等待执行，甚至会出现任务队列满了之后任务/请求无法处理的情况，或者大量任务堆积在任务队列导致 `OOM`。这样很明显是有问题的，CPU 根本没有得到充分利用。
 
 如果我们设置线程数量太大，大量线程可能会同时在争取 CPU 资源，这样会导致大量的上下文切换，从而增加线程的执行时间，影响了整体执行效率。
 
