@@ -48,7 +48,7 @@ title:
 
 ## ✏️算法
 - [基础](./guide/Algorithm/AlgorithmBase.md)
-- LeetCode(编写中)
+- [LeetCode 题解](./guide/Algorithm/LeetCodeAnswer.md)
 - [刷题记录](./guide/Algorithm/LeetCodeRecord.md)
 
 ## ⚓️Linux

@@ -6,37 +6,31 @@ import { defaultTheme } from "@vuepress/theme-default";
 import navbars from "./router/navbar";
 // 侧边栏
 import sidebars from "./router/sidebars";
-
+import { searchPlugin } from '@vuepress/plugin-search'
+import { backToTopPlugin } from '@vuepress/plugin-back-to-top'
 
 export default {
-  // 部署gitee的base
-  base: '/full-stack-notes/',
-  // 部署github的bash
-  // base: '/FullStackNotes/',
-  lang: "zh-CN", //语言设置
-  title: "FullStackNotes", //所有页面标题的后缀
+  
+  base: '/full-stack-notes/', // 部署gitee的base
+  // base: '/FullStackNotes/', // 部署github的base
+  lang: "zh-CN",              //语言设置
+  title: "FullStackNotes",    //所有页面标题的后缀
   description: "这是我的全栈学习笔记", //站点描述，它会被每个页面的 Frontmatter 中的 description 字段覆盖
   head: [
-    ["link", { rel: "icon", href: "/FullStackNotes/images/quantou.png" }],
-
-    // 部署gitee的favicon.ico
-    // ["link", { rel:"shortcut icon", type: "favicon" ,href: "/full-stack-notes/images/favicon.ico"}]
-    
-    // 部署github的favicon.ico
-    // ["link", { rel:"shortcut icon", type: "favicon" ,href: "/FullStackNotes/images/favicon.ico"}]
+    ["link", { rel: "icon", href: "/full-stack-notes/images/quantou.png" }],    // 部署gitee的favcion
+    // ["link", { rel: "icon", href: "/FullStackNotes/images/quantou.png" }],   // 部署github的favcion
   ],
-  pagePatterns: ['**/*.md', '!**/README.md', '!.vuepress', '!node_modules'], // 排除所有的 README.md
+  pagePatterns: ['**/*.md', '!**/README.md', '!.vuepress', '!node_modules'],    // 排除所有的 README.md
   theme: defaultTheme({
-    // 在这里进行配置
-    navbar: navbars,
-    // sidebar: sidebars,
-    sidebarOpen: false,
-    // markdown:md,
-    logo: "/images/quantou.png",
-    markdown: {
-      toc: {
-          includeLevel:[1, 2, 3, 4]
-      }
-    }
+    navbar: navbars,    // 在这里进行配置
+    sidebarOpen: false, // sidebar: sidebars,
+    logo: "/images/quantou.png"
   }),
+  plugins: [
+    // 搜索框
+    searchPlugin({
+      // 配置项
+      maxSuggestions: 10,   // 展示10条搜索内容
+    })
+  ],
 };

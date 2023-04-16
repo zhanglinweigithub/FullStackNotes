@@ -4,9 +4,13 @@ title: Vue-element
 ---
 # Vue-element
 
+::: tip 声明
+
 本项目为学习PanJiaChen大佬的[vue-element-admin](https://github.com/PanJiaChen/vue-element-admin)项目后，开发的简化版工具箱类项目。
 
 大佬项目地址：https://github.com/PanJiaChen/vue-element-admin
+
+:::
 
 本项目将多个文件内容尽可能的放在了一个文件中，减少了复杂的嵌套，并添加注释信息。
 
@@ -231,16 +235,12 @@ npm install jsonlint
 （2）封装组件
 
 ```vue
-<!-- json编辑器 -->
 <template>
-  <div class="components-container">
+  <div>
     <el-button type="primary" @click="formatJSON">格式化JSON</el-button>
 
-    <!-- 编辑器核心部分 start -->
-    <div class="editor-container">
-      <div class="json-editor">
-        <textarea ref="textarea"/>
-      </div>
+    <div class="json-editor">
+      <textarea ref="textarea" />
     </div>
   </div>
 </template>
@@ -255,18 +255,25 @@ import 'codemirror/mode/javascript/javascript'
 import 'codemirror/addon/lint/lint'
 import 'codemirror/addon/lint/json-lint'
 
-const jsonData =
-  '[{"items":[{"market_type":"forexdata","symbol":"XAUUSD"},{"market_type":"forexdata","symbol":"UKOIL"},{"market_type":"forexdata","symbol":"CORN"}],"name":""},{"items":[{"market_type":"forexdata","symbol":"XAUUSD"},{"market_type":"forexdata","symbol":"XAGUSD"},{"market_type":"forexdata","symbol":"AUTD"},{"market_type":"forexdata","symbol":"AGTD"}],"name":"贵金属"},{"items":[{"market_type":"forexdata","symbol":"CORN"},{"market_type":"forexdata","symbol":"WHEAT"},{"market_type":"forexdata","symbol":"SOYBEAN"},{"market_type":"forexdata","symbol":"SUGAR"}],"name":"农产品"},{"items":[{"market_type":"forexdata","symbol":"UKOIL"},{"market_type":"forexdata","symbol":"USOIL"},{"market_type":"forexdata","symbol":"NGAS"}],"name":"能源化工"}]'
-
 export default {
-  name: 'JsonEditorDemo',
+  name: 'JsonEditor',
   components: {},
+  props: ['value'],
   data() {
     return {
-      value: JSON.parse(jsonData), // 编辑器初始值
       jsonEditor: null, // 编辑器实例
     }
   },
+//   watch: {
+//     value(newValue) {
+//       const editorValue = this.jsonEditor.getValue()
+//       if (newValue !== editorValue) {
+//         console.log('success')
+//         const JsonObject = JSON.parse(newValue)
+//         this.jsonEditor.setValue(JSON.stringify(JsonObject, null, 2))
+//       }
+//     },
+//   },
   mounted() {
     // 初始化配置 CodeMirror.fromTextArea() 中第一个参数是DOM元素，而且必须是textarea元素；第二个参数是可选配置项
     this.jsonEditor = CodeMirror.fromTextArea(this.$refs.textarea, {
@@ -281,29 +288,37 @@ export default {
 
     // 给编辑器赋值，并格式化
     this.jsonEditor.setValue(JSON.stringify(this.value, null, 2))
+
+    // 双向绑定
+    this.jsonEditor.on('change', (cm) => {
+      this.$emit('changed', cm.getValue())
+      this.$emit('input', cm.getValue())
+    })
   },
   methods: {
     // 格式化 JSON
     formatJSON() {
-        this.value = this.jsonEditor.getValue()
-        if (typeof this.value === 'object') {
-            this.jsonEditor.setValue(JSON.stringify(ni, null, 2))
+      //   this.value = this.jsonEditor.getValue()
+      if (typeof this.value === 'object') {
+        try {
+          this.jsonEditor.setValue(JSON.stringify(this.value, null, 2))
+        } catch {
+          this.$message.error('请确认JSON字符串符合规范')
         }
-        if (typeof this.value === 'string') {
-            const JsonObject = JSON.parse(this.value)
-            this.jsonEditor.setValue(JSON.stringify(JsonObject, null, 2))
+      }
+      if (typeof this.value === 'string') {
+        try {
+          const JsonObject = JSON.parse(this.value)
+          this.jsonEditor.setValue(JSON.stringify(JsonObject, null, 2))
+        } catch {
+          this.$message.error('请确认JSON字符串符合规范')
         }
+      }
     }
   },
 }
 </script>
 
-<style scoped>
-.editor-container {
-  position: relative;
-  height: 100%;
-}
-</style>
 <style lang="scss" scoped>
 .json-editor {
   height: 100%;
@@ -325,47 +340,112 @@ export default {
   }
 }
 </style>
-
 ```
-（3）常用配置项
+（3）在父组件中引用
 
-value：编辑器的初始值 string 
-mode：编辑器语言的模式 string 
-lineSeparator：换行分隔符 - [string | null] null的时候默认为\n
-theme：编辑器主题 string 需要引入theme 目录下对应的样式文件
-indentUnit：编辑器中缩进的大小 integer 单位：空格
-smartIndent：是否使用mode提供的上下文的缩进 boolean 默认为true，设置为false，换行的时候上下文的缩进没有，从该行的首位开始
-tabSize：tab字符的大小 integer 单位：空格
-indentWithTabs：缩进的时候，是否把前面的N*tab大小的空间转化为N个tab字符，默认为false
-electricChars：语言模式提供缩进的前提下，当输入的会引起缩进变化的时候，是否重新调整当前行的缩进，默认为true
-lineWrapping：是否自动换行 boolean
-lineNumbers：编辑器左侧是否显示行号 boolean
-firstLineNumber：首行行号的设定，默认为1 integer
-lineNumberFormatter： 左侧行号格式化方法 function(line: integer) → string
+~~~vue
+<!-- json编辑器 -->
+<template>
+  <div class="components-container">
+    <!-- 使用 json-editor 组件，将value传递给子组件-->
+    <json-editor ref="jsonEditor" v-model="value" />
+  </div>
+</template>
+
+<script>
+const jsonData =
+  '[{"items":[{"market_type":"forexdata","symbol":"XAUUSD"},{"market_type":"forexdata","symbol":"UKOIL"},{"market_type":"forexdata","symbol":"CORN"}],"name":""},{"items":[{"market_type":"forexdata","symbol":"XAUUSD"},{"market_type":"forexdata","symbol":"XAGUSD"},{"market_type":"forexdata","symbol":"AUTD"},{"market_type":"forexdata","symbol":"AGTD"}],"name":"贵金属"},{"items":[{"market_type":"forexdata","symbol":"CORN"},{"market_type":"forexdata","symbol":"WHEAT"},{"market_type":"forexdata","symbol":"SOYBEAN"},{"market_type":"forexdata","symbol":"SUGAR"}],"name":"农产品"},{"items":[{"market_type":"forexdata","symbol":"UKOIL"},{"market_type":"forexdata","symbol":"USOIL"},{"market_type":"forexdata","symbol":"NGAS"}],"name":"能源化工"}]'
+
+import JsonEditor from '@/components/jsonEditor/json-editor.vue'
+export default {
+  name: 'JsonEditorDemo',
+  components: { JsonEditor },
+  data() {
+    return {
+      visible: false,
+      value: JSON.parse(jsonData), // 编辑器初始值
+    }
+  },
+}
+</script>
+
+<style scoped>
+.editor-container {
+  position: relative;
+  height: 100%;
+}
+</style>
+
+~~~
+
+（4）常用配置项
+
+::: tip
+
+更多配置项，参见官网：https://codemirror.net/5/doc/manual.html#config
+
+:::
+
+`value`：编辑器的初始值 string 
+
+`mode`：编辑器语言的模式 string 
+
+`lineSeparator`：换行分隔符 - `[string | null]` null的时候默认为`\n`
+
+`theme`：编辑器主题 string 需要引入theme 目录下对应的样式文件
+
+`indentUnit`：编辑器中缩进的大小 integer 单位：空格
+
+`smartIndent`：是否使用mode提供的上下文的缩进 boolean 默认为true，设置为false，换行的时候上下文的缩进没有，从该行的首位开始
+
+`tabSize`：tab字符的大小 integer 单位：空格
+
+`indentWithTabs`：缩进的时候，是否把前面的`N*tab`大小的空间转化为N个tab字符，默认为false
+
+`electricChars`：语言模式提供缩进的前提下，当输入的会引起缩进变化的时候，是否重新调整当前行的缩进，默认为true
+
+`lineWrapping`：是否自动换行 boolean
+
+`lineNumbers`：编辑器左侧是否显示行号 boolean
+
+`firstLineNumber`：首行行号的设定，默认为1 integer
+
+`lineNumberFormatter`： 左侧行号格式化方法 `function(line: integer) → string`
+
 ```javascript
 // 左侧行号为2,4,6...
 lineNumberFormatter: (line) => line * 2,
 ```
-readOnly：编辑器是否只读 boolean | string 
+`readOnly`：编辑器是否只读 `boolean | string` 
 
 - false - 默认，可编辑 
 - true - 只读，但是可显示光标，可以获取焦点
 - nocursor - 只读，不显示光标，不可获取焦点
 
-showCursorWhenSelecting：选择内容的时候是否显示光标 boolean
-lineWiseCopyCut：当没有选择内容时，进行复制或剪切操作，是否复制或剪切当前光标所在的整行内容 boolean
-undoDepth：编辑器存储的最大撤销级别数, 这包括选择更改事件。默认为200 integer
-historyEventDelay：输入或删除的时候，停顿一定时间后，会被认定为下一次操作。默认1250 integer 单位：毫秒
-autofocus：初始化的时候是否自动获取焦点 boolean
-dragDrop：是否启动拖拽，默认启用true boolean
-allowDropFileTypes：允许可以向编辑器拖入的文件MIME类型 `array<string>`
+`showCursorWhenSelecting`：选择内容的时候是否显示光标 boolean
+
+`lineWiseCopyCut`：当没有选择内容时，进行复制或剪切操作，是否复制或剪切当前光标所在的整行内容 boolean
+
+`undoDepth`：编辑器存储的最大撤销级别数, 这包括选择更改事件。默认为200 integer
+
+`historyEventDelay`：输入或删除的时候，停顿一定时间后，会被认定为下一次操作。默认1250 integer 单位：毫秒
+
+`autofocus`：初始化的时候是否自动获取焦点 boolean
+
+`dragDrop`：是否启动拖拽，默认启用true boolean
+
+`allowDropFileTypes`：允许可以向编辑器拖入的文件MIME类型 `array<string>`
+
 ```javascript
 allowDropFileTypes: ['text/html'],  // 可以向编辑器中拖入html文件
 // 但是此时 dragDrop 不能为false，否则该项不起作用
 ```
-spellcheck：指定是否对输入启用拼写检查 boolean
-autocorrect：指定是否对输入启用自动更正 boolean
-autocapitalize：指定是否对输入启用自动大小写 boolean
+`spellcheck`：指定是否对输入启用拼写检查 boolean
+
+`autocorrect`：指定是否对输入启用自动更正 boolean
+
+`autocapitalize`：指定是否对输入启用自动大小写 boolean
+
 ## 四、SplitPane 拆分窗格
 （1）安装依赖
 
@@ -486,14 +566,21 @@ export default {
 
 ```
 ## 五、avatar-upload 上传头像
+
+::: warning 注意
+
+需要自己编写上传请求
+
+:::
+
 （1）将 @/components/uploadAvatar 文件夹复制到你的项目中
 
 ![image.png](../Vue2/img/1680579399406-1638d84c-8618-4810-843d-c06db32b0dd2.png)
 
 （2）自定义父组件
 
-- 使用头像组件则在父组件引入 show-avatar.vue 组件
-- 使用上传组件则在父组件引入 show-upload-avatar.vue 组件
+- 使用头像组件则在父组件引入 `show-avatar.vue` 组件
+- 使用上传组件则在父组件引入 `show-upload-avatar.vue` 组件
 
 ![image.png](../Vue2/img/1680579430875-e714d104-732b-4c9b-8239-7c132d422afb.png)
 
@@ -594,9 +681,323 @@ DropZone 高度可定制化，且中文文档很通俗易懂，没有写详细�
 ```bash
 npm install dropzone 
 ```
-（2）复制 @/components/Dropzone 到你的项目中
+（2）封装组件
 
-![image.png](../Vue2/img/1680583351404-163fd4f1-8596-4ef4-bbab-072bc5638c06.png)
+~~~vue
+<!-- 可拖放上传组件 -->
+<!-- 中文文档：http://wxb.github.io/dropzonejs.com.zh-CN/dropzonezh-CN/# -->
+<!-- 所有内容都可在文档中找到 -->
+<template>
+  <div :id="id" :ref="id" :action="url" class="dropzone">
+    <input type="file" name="file">
+  </div>
+</template>
+
+<script>
+import Dropzone from 'dropzone'
+import 'dropzone/dist/dropzone.css'
+// import { getToken } from 'api/qiniu';
+
+// 禁止对所有元素的自动查找
+Dropzone.autoDiscover = false
+
+export default {
+  props: {
+    id: {
+      type: String,
+      required: true
+    },
+    url: {
+      type: String,
+      required: true
+    },
+    // dropzone 元素本身是否可点击
+    clickable: {
+      type: Boolean,
+      default: true
+    },
+    defaultMsg: {
+      type: String,
+      default: '上传图片'
+    },
+    acceptedFiles: {
+      type: String,
+      default: ''
+    },
+    // 设置Height，配合下面的thumbnailWidth一起使用
+    thumbnailHeight: {
+      type: Number,
+      default: 200
+    },
+    // 设置width，配合上面的thumbnailHeight一起使用
+    thumbnailWidth: {
+      type: Number,
+      default: 200
+    },
+    showRemoveLink: {
+      type: Boolean,
+      default: true
+    },
+    maxFilesize: {
+      type: Number,
+      default: 2
+    },
+    maxFiles: {
+      type: Number,
+      default: 3
+    },
+    autoProcessQueue: {
+      type: Boolean,
+      default: true
+    },
+    useCustomDropzoneOptions: {
+      type: Boolean,
+      default: false
+    },
+    defaultImg: {
+      default: '',
+      type: [String, Array]
+    },
+    // 是否可粘贴
+    couldPaste: {
+      type: Boolean,
+      default: false
+    }
+  },
+  data() {
+    return {
+      dropzone: '',
+      initOnce: true
+    }
+  },
+  watch: {
+    defaultImg(val) {
+      if (val.length === 0) {
+        this.initOnce = false
+        return
+      }
+      if (!this.initOnce) return
+      this.initImages(val)
+      this.initOnce = false
+    }
+  },
+  mounted() {
+    const element = document.getElementById(this.id)
+    const vm = this
+    // 一些初始化配置,可访问 http://wxb.github.io/dropzonejs.com.zh-CN/dropzonezh-CN/#events 查看
+    this.dropzone = new Dropzone(element, {
+      clickable: this.clickable, // dropzone 元素本身是否可点击
+      thumbnailWidth: this.thumbnailWidth, // 设置width
+      thumbnailHeight: this.thumbnailHeight, // 设置Height
+      maxFiles: this.maxFiles, // 设置 Dropzone 最多可以处理多少文件. 如果超过这个限制, maxfilesexceeded 事件将被调用
+      maxFilesize: this.maxFilesize, // 以MB为单位,上传文件的大小限制
+      dictRemoveFile: 'Remove', // 如果addRemoveLinks为 true，这段文本用来设置删除文件显示文本.
+      addRemoveLinks: this.showRemoveLink,
+      acceptedFiles: this.acceptedFiles,
+      autoProcessQueue: this.autoProcessQueue,
+      dictDefaultMessage: '<i style="margin-top: 3em;display: inline-block" class="material-icons">' + this.defaultMsg + '</i><br>Drop files here to upload',
+      dictMaxFilesExceeded: '只能一个图',
+      previewTemplate: '<div class="dz-preview dz-file-preview">  <div class="dz-image" style="width:' + this.thumbnailWidth + 'px;height:' + this.thumbnailHeight + 'px" ><img style="width:' + this.thumbnailWidth + 'px;height:' + this.thumbnailHeight + 'px" data-dz-thumbnail /></div>  <div class="dz-details"><div class="dz-size"><span data-dz-size></span></div> <div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></div>  <div class="dz-error-message"><span data-dz-errormessage></span></div>  <div class="dz-success-mark"> <i class="material-icons">done</i> </div>  <div class="dz-error-mark"><i class="material-icons">error</i></div></div>',
+      init() {
+        const val = vm.defaultImg
+        if (!val) return
+        if (Array.isArray(val)) {
+          if (val.length === 0) return
+          val.map((v, i) => {
+            const mockFile = { name: 'name' + i, size: 12345, url: v }
+            this.options.addedfile.call(this, mockFile)
+            this.options.thumbnail.call(this, mockFile, v)
+            mockFile.previewElement.classList.add('dz-success')
+            mockFile.previewElement.classList.add('dz-complete')
+            vm.initOnce = false
+            return true
+          })
+        } else {
+          const mockFile = { name: 'name', size: 12345, url: val }
+          this.options.addedfile.call(this, mockFile)
+          this.options.thumbnail.call(this, mockFile, val)
+          mockFile.previewElement.classList.add('dz-success')
+          mockFile.previewElement.classList.add('dz-complete')
+          vm.initOnce = false
+        }
+      },
+      accept: (file, done) => {
+        /* 七牛*/
+        // const token = this.$store.getters.token;
+        // getToken(token).then(response => {
+        //   file.token = response.data.qiniu_token;
+        //   file.key = response.data.qiniu_key;
+        //   file.url = response.data.qiniu_url;
+        //   done();
+        // })
+        done()
+      },
+      sending: (file, xhr, formData) => {
+        // formData.append('token', file.token);
+        // formData.append('key', file.key);
+        vm.initOnce = false
+      }
+    })
+
+    // 若可以粘贴，添加一个粘贴监听
+    if (this.couldPaste) {
+      document.addEventListener('paste', this.pasteImg)
+    }
+
+    // 很多的回调事件给父组件，官方文档都有说明，中文的很好理解
+    this.dropzone.on('success', file => {
+      vm.$emit('dropzone-success', file, vm.dropzone.element)
+    })
+    this.dropzone.on('addedfile', file => {
+      vm.$emit('dropzone-fileAdded', file)
+    })
+    this.dropzone.on('removedfile', file => {
+      vm.$emit('dropzone-removedFile', file)
+    })
+    this.dropzone.on('error', (file, error, xhr) => {
+      vm.$emit('dropzone-error', file, error, xhr)
+    })
+    this.dropzone.on('successmultiple', (file, error, xhr) => {
+      vm.$emit('dropzone-successmultiple', file, error, xhr)
+    })
+  },
+  // 销毁掉监听器和组件
+  destroyed() {
+    document.removeEventListener('paste', this.pasteImg)
+    this.dropzone.destroy()
+  },
+  methods: {
+    // 删除所有文件
+    removeAllFiles() {
+      this.dropzone.removeAllFiles(true)
+    },
+    processQueue() {
+      this.dropzone.processQueue()
+    },
+    pasteImg(event) {
+      const items = (event.clipboardData || event.originalEvent.clipboardData).items
+      if (items[0].kind === 'file') {
+        this.dropzone.addFile(items[0].getAsFile())
+      }
+    },
+    initImages(val) {
+      if (!val) return
+      if (Array.isArray(val)) {
+        val.map((v, i) => {
+          const mockFile = { name: 'name' + i, size: 12345, url: v }
+          this.dropzone.options.addedfile.call(this.dropzone, mockFile)
+          this.dropzone.options.thumbnail.call(this.dropzone, mockFile, v)
+          mockFile.previewElement.classList.add('dz-success')
+          mockFile.previewElement.classList.add('dz-complete')
+          return true
+        })
+      } else {
+        const mockFile = { name: 'name', size: 12345, url: val }
+        this.dropzone.options.addedfile.call(this.dropzone, mockFile)
+        this.dropzone.options.thumbnail.call(this.dropzone, mockFile, val)
+        mockFile.previewElement.classList.add('dz-success')
+        mockFile.previewElement.classList.add('dz-complete')
+      }
+    }
+
+  }
+}
+</script>
+
+<style scoped>
+    .dropzone {
+        border: 2px solid #E5E5E5;
+        font-family: 'Roboto', sans-serif;
+        color: #777;
+        transition: background-color .2s linear;
+        padding: 5px;
+    }
+
+    .dropzone:hover {
+        background-color: #F6F6F6;
+    }
+
+    i {
+        color: #CCC;
+    }
+
+    .dropzone .dz-image img {
+        width: 100%;
+        height: 100%;
+    }
+
+    .dropzone input[name='file'] {
+        display: none;
+    }
+
+    .dropzone .dz-preview .dz-image {
+        border-radius: 0px;
+    }
+
+    .dropzone .dz-preview:hover .dz-image img {
+        transform: none;
+        filter: none;
+        width: 100%;
+        height: 100%;
+    }
+
+    .dropzone .dz-preview .dz-details {
+        bottom: 0px;
+        top: 0px;
+        color: white;
+        background-color: rgba(33, 150, 243, 0.8);
+        transition: opacity .2s linear;
+        text-align: left;
+    }
+
+    .dropzone .dz-preview .dz-details .dz-filename span, .dropzone .dz-preview .dz-details .dz-size span {
+        background-color: transparent;
+    }
+
+    .dropzone .dz-preview .dz-details .dz-filename:not(:hover) span {
+        border: none;
+    }
+
+    .dropzone .dz-preview .dz-details .dz-filename:hover span {
+        background-color: transparent;
+        border: none;
+    }
+
+    .dropzone .dz-preview .dz-remove {
+        position: absolute;
+        z-index: 30;
+        color: white;
+        margin-left: 15px;
+        padding: 10px;
+        top: inherit;
+        bottom: 15px;
+        border: 2px white solid;
+        text-decoration: none;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        font-weight: 800;
+        letter-spacing: 1.1px;
+        opacity: 0;
+    }
+
+    .dropzone .dz-preview:hover .dz-remove {
+        opacity: 1;
+    }
+
+    .dropzone .dz-preview .dz-success-mark, .dropzone .dz-preview .dz-error-mark {
+        margin-left: -40px;
+        margin-top: -50px;
+    }
+
+    .dropzone .dz-preview .dz-success-mark i, .dropzone .dz-preview .dz-error-mark i {
+        color: white;
+        font-size: 5rem;
+    }
+</style>
+
+~~~
+
+
 
 （3）自定义父组件，引入 dropzone.vue
 
@@ -977,10 +1378,118 @@ export default {
 [z-index文档](https://developer.mozilla.org/zh-CN/docs/Web/CSS/z-index)
 在自己项目中使用
 
-（1）复制组件
+（1）封装组件
 
-将 @/components/Sticky 复制到自己的项目中
-![image.png](../Vue2/img/1680586041748-830a7917-1406-4370-a7c6-6215bfd9bfbf.png)
+~~~vue
+<!-- 吸附 -->
+<template>
+  <div :style="{height:height+'px',zIndex:zIndex}">
+    <div
+      :class="className"
+      :style="{top:(isSticky ? stickyTop +'px' : ''),zIndex:zIndex,position:position,width:width,height:height+'px'}"
+    >
+      <slot>
+        <div>sticky</div>
+      </slot>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'Sticky',
+  props: {
+    // 粘在距离窗口顶部哪个位置
+    stickyTop: {
+      type: Number,
+      default: 0
+    },
+    // zIndex大的值，会覆盖在 zIndex 小的值之上显示
+    zIndex: {
+      type: Number,
+      default: 1
+    },
+    className: {
+      type: String,
+      default: ''
+    }
+  },
+  data() {
+    return {
+      active: false,
+      position: '',
+      width: undefined,
+      height: undefined,
+      isSticky: false
+    }
+  },
+  mounted() {
+    // 获得元素高度
+    // 详细文档 https://developer.mozilla.org/zh-CN/docs/Web/API/Element/getBoundingClientRect
+    this.height = this.$el.getBoundingClientRect().height
+
+    // 添加监听器
+    window.addEventListener('scroll', this.handleScroll)
+    window.addEventListener('resize', this.handleResize)
+  },
+  activated() {
+    this.handleScroll()
+  },
+  // 销毁监听器
+  destroyed() {
+    window.removeEventListener('scroll', this.handleScroll)
+    window.removeEventListener('resize', this.handleResize)
+  },
+  methods: {
+    // 粘住 方法
+    sticky() {
+        // 已经粘住 就不再调用
+      if (this.active) {
+        return
+      }
+    //   未粘住，则粘住
+      this.position = 'fixed'
+      this.active = true
+      this.width = this.width + 'px'
+      this.isSticky = true
+    },
+    handleReset() {
+      if (!this.active) {
+        return
+      }
+      this.reset()
+    },
+    // 重置
+    reset() {
+      this.position = ''
+      this.width = 'auto'
+      this.active = false
+      this.isSticky = false
+    },
+    // 滚动时，实时获取元素位置
+    handleScroll() {
+      const width = this.$el.getBoundingClientRect().width
+      this.width = width || 'auto'
+      const offsetTop = this.$el.getBoundingClientRect().top
+    //   当前位置小于要粘的位置，粘住
+      if (offsetTop < this.stickyTop) {
+        this.sticky()
+        return
+      }
+      this.handleReset()
+    },
+    // 实时改变元素位置
+    handleResize() {
+      if (this.isSticky) {
+        this.width = this.$el.getBoundingClientRect().width + 'px'
+      }
+    }
+  }
+}
+</script>
+~~~
+
+
 
 （2）自定义父组件
 
@@ -997,9 +1506,239 @@ export default {
 ```vue
 npm install vue-count-to
 ```
-（2）将 @/views/components/count-to.vue 组件复制到自己的项目，给定初始值即可使用
+（2）封装组件，给定初始值即可使用
 
-![image.png](../Vue2/img/1680587583743-5ffc550b-7973-40f6-992c-6f44542f4597.png)
+~~~vue
+<!-- 滚动计数 -->
+<template>
+  <div class="components-container">
+    <aside>
+      <a href="https://github.com/PanJiaChen/vue-countTo" target="_blank">countTo文档</a><br/>
+      <a href="http://datav.jiaminghi.com/" target="_blank">Vue 大屏数据展示组件库</a>
+    </aside>
+    <!-- 滚动计数组件 -->
+    <count-to
+      ref="example"
+      :start-val="_startVal"
+      :end-val="_endVal"
+      :duration="_duration"
+      :decimals="_decimals"
+      :separator="_separator"
+      :prefix="_prefix"
+      :suffix="_suffix"
+      :autoplay="false"
+      class="example"
+    />
+    <div style="margin-left: 25%;margin-top: 40px;">
+      <label class="label" for="startValInput">startVal:
+        <input v-model.number="setStartVal" type="number" name="startValInput">
+      </label>
+      <label class="label" for="endValInput">endVal:
+        <input v-model.number="setEndVal" type="number" name="endVaInput">
+      </label>
+      <label class="label" for="durationInput">duration:
+        <input v-model.number="setDuration" type="number" name="durationInput">
+      </label>
+      <div class="startBtn example-btn" @click="start">
+        开始
+      </div>
+      <div class="pause-resume-btn example-btn" @click="pauseResume">
+        暂停/恢复
+      </div>
+      <br>
+      <label class="label" for="decimalsInput">decimals:
+        <input v-model.number="setDecimals" type="number" name="decimalsInput">
+      </label>
+      <label class="label" for="separatorInput">separator:
+        <input v-model="setSeparator" name="separatorInput">
+      </label>
+      <label class="label" for="prefixInput">prefix:
+        <input v-model="setPrefix" name="prefixInput">
+      </label>
+      <label class="label" for="suffixInput">suffix:
+        <input v-model="setSuffix" name="suffixInput">
+      </label>
+    </div>
+    <aside>
+        源代码<br/>
+      &lt;count-to :start-val=&#x27;{{ _startVal }}&#x27; :end-val=&#x27;{{ _endVal }}&#x27; :duration=&#x27;{{ _duration }}&#x27;
+      :decimals=&#x27;{{ _decimals }}&#x27; :separator=&#x27;{{ _separator }}&#x27; :prefix=&#x27;{{ _prefix }}&#x27; :suffix=&#x27;{{ _suffix }}&#x27;
+      :autoplay=false&gt;</aside>
+  </div>
+</template>
+
+<script>
+// 引入
+import countTo from 'vue-count-to'
+
+export default {
+  name: 'CountToDemo',
+  components: { countTo },
+  data() {
+    return {
+      setStartVal: 0, // 开始值
+      setEndVal: 2017, // 结束值
+      setDuration: 4000, // 持续时间（在几毫秒内完成）
+      setDecimals: 0, // 小数点（展示几位小数点）
+      setSeparator: ',', // 分隔符
+      setSuffix: ' rmb', // 后缀
+      setPrefix: '¥ ' // 前缀
+    }
+  },
+//   输入的值有变化，判断，符合要求用输入的，不符合用默认的
+  computed: {
+    _startVal() {
+      if (this.setStartVal) {
+        return this.setStartVal
+      } else {
+        return 0
+      }
+    },
+    _endVal() {
+      if (this.setEndVal) {
+        return this.setEndVal
+      } else {
+        return 0
+      }
+    },
+    _duration() {
+      if (this.setDuration) {
+        return this.setDuration
+      } else {
+        return 100
+      }
+    },
+    _decimals() {
+      if (this.setDecimals) {
+        if (this.setDecimals < 0 || this.setDecimals > 20) {
+          alert('digits 参数必须介于 0 和 20 之间')
+          return 0
+        }
+        return this.setDecimals
+      } else {
+        return 0
+      }
+    },
+    _separator() {
+      return this.setSeparator
+    },
+    _suffix() {
+      return this.setSuffix
+    },
+    _prefix() {
+      return this.setPrefix
+    }
+  },
+  methods: {
+    // 调用滚动组件的开始方法
+    start() {
+      this.$refs.example.start()
+    },
+    // 调用滚动组件的暂停/恢复方法
+    pauseResume() {
+      this.$refs.example.pauseResume()
+    }
+  }
+}
+</script>
+
+<style scoped>
+.example-btn {
+  display: inline-block;
+  margin-bottom: 0;
+  font-weight: 500;
+  text-align: center;
+  -ms-touch-action: manipulation;
+  touch-action: manipulation;
+  cursor: pointer;
+  background-image: none;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  line-height: 1.5;
+  padding: 4px 15px;
+  font-size: 12px;
+  border-radius: 4px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-transition: all .3s cubic-bezier(.645, .045, .355, 1);
+  transition: all .3s cubic-bezier(.645, .045, .355, 1);
+  position: relative;
+  color: rgba(0, 0, 0, .65);
+  background-color: #fff;
+  border-color: #d9d9d9;
+}
+
+.example-btn:hover {
+  color: #4AB7BD;
+  background-color: #fff;
+  border-color: #4AB7BD;
+}
+.example {
+  font-size: 50px;
+  color: #F6416C;
+  display: block;
+  margin: 10px 0;
+  text-align: center;
+  font-size: 80px;
+  font-weight: 500;
+}
+
+.label {
+  color: #2f4f4f;
+  font-size: 16px;
+  display: inline-block;
+  margin: 15px 30px 15px 0;
+}
+
+input {
+  position: relative;
+  display: inline-block;
+  padding: 4px 7px;
+  width: 70px;
+  height: 28px;
+  cursor: text;
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(0, 0, 0, .65);
+  background-color: #fff;
+  background-image: none;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  -webkit-transition: all .3s;
+  transition: all .3s;
+}
+
+.startBtn {
+  margin-left: 20px;
+  font-size: 20px;
+  color: #30B08F;
+  background-color: #fff;
+}
+
+.startBtn:hover {
+  background-color: #30B08F;
+  color: #fff;
+  border-color: #30B08F;
+}
+
+.pause-resume-btn {
+  font-size: 20px;
+  color: #E65D6E;
+  background-color: #fff;
+}
+
+.pause-resume-btn:hover {
+  background-color: #E65D6E;
+  color: #fff;
+  border-color: #E65D6E;
+}
+</style>
+~~~
+
+（3）也可以将其抽取为可重用组件，通过 prop 接收参数（懒了，没弄，各位有想法的自己实现一下吧。很简单）
+
 ## 九、一些小组件
 ### button组件
 ![image.png](../Vue2/img/1680589526521-890fd261-d1f9-4f04-9ef5-9e8243de224a.png)
@@ -1007,6 +1746,12 @@ npm install vue-count-to
 ![image.png](../Vue2/img/1680589618200-ed5113eb-fcc7-4687-8c0f-d14bc642e84f.png)
 按钮使用的是 router-link 通过 css 的方式实现按钮样式
 主要的 css 样式 pan-btn，后面的是控制颜色
+
+::: tip
+
+css 在 @/style 下都可找到
+
+:::
 
 ```css
 .pan-btn {
@@ -1061,6 +1806,7 @@ npm install vue-count-to
 ![image.png](../Vue2/img/1680590152442-fa523366-00a4-4ecc-afe3-5f494ff6264a.png)
 组件传入一个图片地址，内部有一个 slot 插槽显示在图片后面，精髓在于 CSS
 ![image.png](../Vue2/img/1680590179239-531d263f-48cd-44d6-a7ac-38f5df9a1e99.png)
+
 ![image.png](../Vue2/img/1680590241020-ad061194-ddbe-4b84-b9d7-6c21a7ed920f.png)
 
 ### 水波纹效果
@@ -1070,19 +1816,270 @@ npm install vue-count-to
 在组件上添加自定义的指令即可
 ![image.png](../Vue2/img/1680590487359-54549f4a-4e86-4074-9b80-aa699b349e8e.png)
 这个指令是引入的，并且注册到了vue
-直接将 @/components/waves 复制到自己的项目，在组件中引入即可
 ![image.png](../Vue2/img/1680590605847-555b5017-1277-4c1e-a033-018ffb0972ed.png)
-![image.png](../Vue2/img/1680590579374-f0adf3ac-8e38-4d57-8f01-9c80b7748de3.png)
+
+`index.js`
+
+~~~js
+import waves from './waves'
+
+const install = function(Vue) {
+  // 注册指令
+  Vue.directive('waves', waves)
+}
+
+if (window.Vue) {
+  window.waves = waves
+  // 使用
+  Vue.use(install); // eslint-disable-line
+}
+
+waves.install = install
+export default waves
+
+~~~
+
+`waves.js`
+
+~~~js
+import './waves.css'
+
+const context = '@@wavesContext'
+
+function handleClick(el, binding) {
+  function handle(e) {
+    const customOpts = Object.assign({}, binding.value)
+    const opts = Object.assign({
+      ele: el, // 波纹作用元素
+      type: 'hit', // hit 点击位置扩散 center中心点扩展
+      color: 'rgba(0, 0, 0, 0.15)' // 波纹颜色
+    },
+    customOpts
+    )
+    const target = opts.ele
+    if (target) {
+      target.style.position = 'relative'
+      target.style.overflow = 'hidden'
+      const rect = target.getBoundingClientRect()
+      let ripple = target.querySelector('.waves-ripple')
+      if (!ripple) {
+        ripple = document.createElement('span')
+        ripple.className = 'waves-ripple'
+        ripple.style.height = ripple.style.width = Math.max(rect.width, rect.height) + 'px'
+        target.appendChild(ripple)
+      } else {
+        ripple.className = 'waves-ripple'
+      }
+      switch (opts.type) {
+        case 'center':
+          ripple.style.top = rect.height / 2 - ripple.offsetHeight / 2 + 'px'
+          ripple.style.left = rect.width / 2 - ripple.offsetWidth / 2 + 'px'
+          break
+        default:
+          ripple.style.top =
+            (e.pageY - rect.top - ripple.offsetHeight / 2 - document.documentElement.scrollTop ||
+              document.body.scrollTop) + 'px'
+          ripple.style.left =
+            (e.pageX - rect.left - ripple.offsetWidth / 2 - document.documentElement.scrollLeft ||
+              document.body.scrollLeft) + 'px'
+      }
+      ripple.style.backgroundColor = opts.color
+      ripple.className = 'waves-ripple z-active'
+      return false
+    }
+  }
+
+  if (!el[context]) {
+    el[context] = {
+      removeHandle: handle
+    }
+  } else {
+    el[context].removeHandle = handle
+  }
+
+  return handle
+}
+
+export default {
+  bind(el, binding) {
+    el.addEventListener('click', handleClick(el, binding), false)
+  },
+  update(el, binding) {
+    el.removeEventListener('click', el[context].removeHandle, false)
+    el.addEventListener('click', handleClick(el, binding), false)
+  },
+  unbind(el) {
+    el.removeEventListener('click', el[context].removeHandle, false)
+    el[context] = null
+    delete el[context]
+  }
+}
+~~~
+
+`waves.css`
+
+~~~css
+.waves-ripple {
+    position: absolute;
+    border-radius: 100%;
+    background-color: rgba(0, 0, 0, 0.15);
+    background-clip: padding-box;
+    pointer-events: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-transform: scale(0);
+    -ms-transform: scale(0);
+    transform: scale(0);
+    opacity: 1;
+}
+
+.waves-ripple.z-active {
+    opacity: 0;
+    -webkit-transform: scale(2);
+    -ms-transform: scale(2);
+    transform: scale(2);
+    -webkit-transition: opacity 1.2s ease-out, -webkit-transform 0.6s ease-out;
+    transition: opacity 1.2s ease-out, -webkit-transform 0.6s ease-out;
+    transition: opacity 1.2s ease-out, transform 0.6s ease-out;
+    transition: opacity 1.2s ease-out, transform 0.6s ease-out, -webkit-transform 0.6s ease-out;
+}
+~~~
+
+
 
 ### hover text
+
 ![image.png](../Vue2/img/1680590692331-a0c72843-4a70-4900-bfb7-e145aabc2d1d.png)
-用到了  Mallki.vue 组件
+用到了  `Mallki.vue` 组件
 使用的时候传入 text 属性即可，主要也是 CSS 控制实现
 ![image.png](../Vue2/img/1680590932740-da71739f-84b0-4378-9b4f-0280bd7a8e57.png)
+
+~~~vue
+<template>
+  <a :class="className" class="link--mallki" href="#">
+    {{ text }}
+    <span :data-letters="text" />
+    <span :data-letters="text" />
+  </a>
+</template>
+
+<script>
+export default {
+  props: {
+    className: {
+      type: String,
+      default: ''
+    },
+    text: {
+      type: String,
+      default: 'vue-element-admin'
+    }
+  }
+}
+</script>
+
+<style>
+/* Mallki */
+
+.link--mallki {
+  font-weight: 800;
+  color: #4dd9d5;
+  font-family: 'Dosis', sans-serif;
+  -webkit-transition: color 0.5s 0.25s;
+  transition: color 0.5s 0.25s;
+  overflow: hidden;
+  position: relative;
+  display: inline-block;
+  line-height: 1;
+  outline: none;
+  text-decoration: none;
+}
+
+.link--mallki:hover {
+  -webkit-transition: none;
+  transition: none;
+  color: transparent;
+}
+
+.link--mallki::before {
+  content: '';
+  width: 100%;
+  height: 6px;
+  margin: -3px 0 0 0;
+  background: #3888fa;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  -webkit-transform: translate3d(-100%, 0, 0);
+  transform: translate3d(-100%, 0, 0);
+  -webkit-transition: -webkit-transform 0.4s;
+  transition: transform 0.4s;
+  -webkit-transition-timing-function: cubic-bezier(0.7, 0, 0.3, 1);
+  transition-timing-function: cubic-bezier(0.7, 0, 0.3, 1);
+}
+
+.link--mallki:hover::before {
+  -webkit-transform: translate3d(100%, 0, 0);
+  transform: translate3d(100%, 0, 0);
+}
+
+.link--mallki span {
+  position: absolute;
+  height: 50%;
+  width: 100%;
+  left: 0;
+  top: 0;
+  overflow: hidden;
+}
+
+.link--mallki span::before {
+  content: attr(data-letters);
+  color: red;
+  position: absolute;
+  left: 0;
+  width: 100%;
+  color: #3888fa;
+  -webkit-transition: -webkit-transform 0.5s;
+  transition: transform 0.5s;
+}
+
+.link--mallki span:nth-child(2) {
+  top: 50%;
+}
+
+.link--mallki span:first-child::before {
+  top: 0;
+  -webkit-transform: translate3d(0, 100%, 0);
+  transform: translate3d(0, 100%, 0);
+}
+
+.link--mallki span:nth-child(2)::before {
+  bottom: 0;
+  -webkit-transform: translate3d(0, -100%, 0);
+  transform: translate3d(0, -100%, 0);
+}
+
+.link--mallki:hover span::before {
+  -webkit-transition-delay: 0.3s;
+  transition-delay: 0.3s;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
+  transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
+}
+</style>
+~~~
+
+
 
 ### Share
 点击会弹出很多内容，抽屉的效果
 ![image.png](../Vue2/img/1680590904592-3dc6b39a-be51-4cbf-a7b9-9dde827d780f.png)
+
+使用时传入 title 和 items 即可
+
 ![image.png](../Vue2/img/1680591062443-d7063695-f1ae-4618-a83b-c50d3d21e18f.png)
 title 为开启抽屉的按钮
 items 为抽屉内容，接收一个数组
@@ -1090,9 +2087,282 @@ items 为抽屉内容，接收一个数组
 通过点击顶部按钮，切换 isActive 的状态，来控制 CSS 特效
 通过遍历传入的 items 来生成抽屉的内容
 
+~~~vue
+<template>
+  <div :class="{active:isActive}" class="share-dropdown-menu">
+    <div class="share-dropdown-menu-wrapper">
+      <span class="share-dropdown-menu-title" @click.self="clickTitle">{{ title }}</span>
+      <div v-for="(item,index) of items" :key="index" class="share-dropdown-menu-item">
+        <a v-if="item.href" :href="item.href" target="_blank">{{ item.title }}</a>
+        <span v-else>{{ item.title }}</span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  props: {
+    items: {
+      type: Array,
+      default: function() {
+        return []
+      }
+    },
+    title: {
+      type: String,
+      default: 'vue'
+    }
+  },
+  data() {
+    return {
+      isActive: false
+    }
+  },
+  methods: {
+    clickTitle() {
+      this.isActive = !this.isActive
+    }
+  }
+}
+</script>
+
+<style lang="scss" >
+$n: 9; //和items.length 相同
+$t: .1s;
+.share-dropdown-menu {
+  width: 250px;
+  position: relative;
+  z-index: 1;
+  height: auto!important;
+  &-title {
+    width: 100%;
+    display: block;
+    cursor: pointer;
+    background: black;
+    color: white;
+    height: 60px;
+    line-height: 60px;
+    font-size: 20px;
+    text-align: center;
+    z-index: 2;
+    transform: translate3d(0,0,0);
+  }
+  &-wrapper {
+    position: relative;
+  }
+  &-item {
+    text-align: center;
+    position: absolute;
+    width: 100%;
+    background: #e0e0e0;
+    color: #000;
+    line-height: 60px;
+    height: 60px;
+    cursor: pointer;
+    font-size: 18px;
+    overflow: hidden;
+    opacity: 1;
+    transition: transform 0.28s ease;
+    &:hover {
+      background: black;
+      color: white;
+    }
+    @for $i from 1 through $n {
+      &:nth-of-type(#{$i}) {
+        z-index: -1;
+        transition-delay: $i*$t;
+        transform: translate3d(0, -60px, 0);
+      }
+    }
+  }
+  &.active {
+    .share-dropdown-menu-wrapper {
+      z-index: 1;
+    }
+    .share-dropdown-menu-item {
+      @for $i from 1 through $n {
+        &:nth-of-type(#{$i}) {
+          transition-delay: ($n - $i)*$t;
+          transform: translate3d(0, ($i - 1)*60px, 0);
+        }
+      }
+    }
+  }
+}
+</style>
+~~~
+
+
+
 ## 十、back-to-top 返回顶部
-组件：@/components/BackToTop/back-to-top.vue
-![image.png](../Vue2/img/1680592037492-54b7c701-873b-43a5-a1b1-6fa0064b44a2.png)
+
+（1）封装组件
+
+~~~vue
+<template>
+  <transition :name="transitionName">
+    <div v-show="visible" :style="customStyle" class="back-to-ceiling" @click="backToTop">
+      <svg width="16" height="16" viewBox="0 0 17 17" xmlns="http://www.w3.org/2000/svg" class="Icon Icon--backToTopArrow" aria-hidden="true" style="height:16px;width:16px"><path d="M12.036 15.59a1 1 0 0 1-.997.995H5.032a.996.996 0 0 1-.997-.996V8.584H1.03c-1.1 0-1.36-.633-.578-1.416L7.33.29a1.003 1.003 0 0 1 1.412 0l6.878 6.88c.782.78.523 1.415-.58 1.415h-3.004v7.004z" /></svg>
+    </div>
+  </transition>
+</template>
+
+<script>
+export default {
+  name: 'BackToTop',
+  props: {
+    visibilityHeight: {
+      type: Number,
+      default: 400
+    },
+    backPosition: {
+      type: Number,
+      default: 0
+    },
+    customStyle: {
+      type: Object,
+      default: function() {
+        return {
+          right: '50px',
+          bottom: '50px',
+          width: '40px',
+          height: '40px',
+          'border-radius': '4px',
+          'line-height': '45px',
+          background: '#e7eaf1'
+        }
+      }
+    },
+    transitionName: {
+      type: String,
+      default: 'fade'
+    }
+  },
+  data() {
+    return {
+      visible: false,
+      interval: null,
+      isMoving: false
+    }
+  },
+  mounted() {
+    // 添加滚动监听器
+    window.addEventListener('scroll', this.handleScroll)
+  },
+//   销毁监听器
+  beforeDestroy() {
+    window.removeEventListener('scroll', this.handleScroll)
+    if (this.interval) {
+      clearInterval(this.interval)
+    }
+  },
+  methods: {
+    handleScroll() {
+      this.visible = window.pageYOffset > this.visibilityHeight
+    },
+    // 回到顶部
+    backToTop() {
+      if (this.isMoving) return
+      const start = window.pageYOffset
+      let i = 0
+    //   防止重复点击
+      this.isMoving = true
+    //   滚动所需时间
+      this.interval = setInterval(() => {
+        const next = Math.floor(this.easeInOutQuad(10 * i, start, -start, 500))
+        if (next <= this.backPosition) {
+          window.scrollTo(0, this.backPosition)
+          clearInterval(this.interval)
+          this.isMoving = false
+        } else {
+          window.scrollTo(0, next)
+        }
+        i++
+      }, 16.7)
+    },
+    easeInOutQuad(t, b, c, d) {
+      if ((t /= d / 2) < 1) return c / 2 * t * t + b
+      return -c / 2 * (--t * (t - 2) - 1) + b
+    }
+  }
+}
+</script>
+
+<style scoped>
+.back-to-ceiling {
+  position: fixed;
+  display: inline-block;
+  text-align: center;
+  cursor: pointer;
+}
+
+.back-to-ceiling:hover {
+  background: #d5dbe7;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity .5s;
+}
+
+.fade-enter,
+.fade-leave-to {
+  opacity: 0
+}
+
+.back-to-ceiling .Icon {
+  fill: #9aaabf;
+  background: none;
+}
+</style>
+~~~
+
+（2）自定义父组件，使用
+
+~~~vue
+<template>
+  <div class="components-container">
+    <div class="placeholder-container">
+     <!-- ... -->
+    </div>
+    <!-- you can add element-ui's tooltip -->
+    <el-tooltip placement="top" content="返回顶部">
+      <back-to-top :custom-style="myBackToTopStyle" :visibility-height="300" :back-position="50" transition-name="fade" />
+    </el-tooltip>
+  </div>
+</template>
+
+<script>
+import BackToTop from '@/components/BackToTop/back-to-top.vue'
+
+export default {
+  name: 'BackToTopDemo',
+  components: { BackToTop },
+  data() {
+    return {
+      // customizable button style, show/hide critical point, return position
+      myBackToTopStyle: {
+        right: '50px',
+        bottom: '50px',
+        width: '40px',
+        height: '40px',
+        'border-radius': '4px',
+        'line-height': '45px', // 请保持与高度一致以垂直居中 Please keep consistent with height to center vertically
+        background: '#e7eaf1'// 按钮的背景颜色 The background color of the button
+      }
+    }
+  }
+}
+</script>
+
+<style scoped>
+.placeholder-container div {
+  margin: 10px;
+}
+</style>
+
+~~~
+
 接收自定义的样式，和按钮出现的高度，大佬的这个就很不错，没必要改（不会改）直接用就好啦
 组件内部主要是添加滚动监听器，回到顶部的方法（看的不是很懂，用的时候直接抄）
-![image.png](../Vue2/img/1680592210079-711f312d-aea4-4f8c-9ebb-0aa1f7ddba48.png)

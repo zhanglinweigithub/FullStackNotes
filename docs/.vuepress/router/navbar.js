@@ -124,10 +124,10 @@ const navbars = [
         text: "基础",
         link: "/guide/Algorithm/AlgorithmBase.md",
       },
-      // {
-      //   text: "LeetCode",
-      //   link: "/guide/Algorithm/sort/BubbleSort.md",
-      // },
+      {
+        text: "LeetCode 题解",
+        link: "/guide/Algorithm/LeetCodeAnswer.md",
+      },
       {
         text: "刷题记录",
         link: "/guide/Algorithm/LeetCodeRecord.md",
