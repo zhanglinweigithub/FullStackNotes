@@ -5,6 +5,10 @@ title:
 
 <img src="/images/favicon.ico" height="300" style="display: block; margin: 0 auto;"/>
 
+## 📌小程序
+- [前置知识](./guide/Applets/AppletsBefore.md)
+- [开发知识](./guide/Applets/Applets.md)
+
 ## ☕️Java
 
 - [Java 基础](./guide/Java/JavaBase.md)
@@ -39,6 +43,7 @@ title:
 ## 🧰工具
 - [Git](./guide/Git/Git.md)
 - [Docker](./guide/Docker/Docker.md)
+- [Hutools](./guide/Hutools/Hutools.md)
 
 ## 🚪前端技术
 - [Vue2](./guide/Vue2/Vue2.md)

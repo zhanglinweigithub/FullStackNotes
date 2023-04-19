@@ -3,6 +3,19 @@
 // children：子页面
 const navbars = [
   {
+    text: "小程序",
+    children: [
+      {
+        text: "前置知识",
+        link: "/guide/Applets/AppletsBefore.md",
+      },
+      {
+        text: "开发知识",
+        link: "/guide/Applets/Applets.md",
+      },
+    ],
+  },
+  {
     text: "Java",
     children: [
       {
@@ -93,6 +106,10 @@ const navbars = [
       {
         text: "Docker",
         link: "/guide/Docker/Docker.md",
+      },
+      {
+        text: "Hutools",
+        link: "/guide/Hutools/Hutools.md",
       },
     ],
   },

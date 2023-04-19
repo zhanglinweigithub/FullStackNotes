@@ -316,7 +316,81 @@ public String(String original) {
 }
 ```
 
+### String常用方法
 
+`toString()`：返回字符串本身，返回值为 **String** 类型
+
+`length()` ：返回字符串字符序列的长度（空格也算），返回值为 **int** 类型
+
+`getBytes()` ：将当前字符串内容转换为 `byte` 数组并返回，返回值为 **byte[]**
+
+~~~java
+String str = new String("Hello World");
+byte[] bytes = str.getBytes();
+for (int i = 0; i < bytes.length; i++) {
+	System.out.println("下标为" + i + "的元素为：" + bytes[i]);//打印的是每个字母对应的ASCII码
+}
+~~~
+
+`toCharArray()` ：将当前字符串内容转换为 char 数组并返回，返回值为 **char[]**
+
+~~~java
+String str = new String("Hello World");
+char[] cArr = str.toCharArray();
+for (int i = 0; i < str.length(); i++) {
+    System.out.println("下标为" + i + "的元素为：" + cArr[i]);//打印的是每个字母
+}
+~~~
+
+`charAt(int index)` ：用于返回字符串指定位置的字符，返回值为 **char** 类型，参数为 **int** 类型
+
+`compareTo(String anotherString)`：比较调用对象和参数对象的大小关系，返回值为 **int** 类型，`a=b`，返回 0；`a>b`，则返回正整数；`a<b`，则返回负整数。
+
+`contains(CharSequence s)`：判断当前字符串是否包含参数指定的内容，返回值为 **boolean** 类型
+
+`trim()`：去掉前导和尾随空白的字符串，返回值为 **String** 类型
+
+`toUpperCase()` ：返回字符串的大写形式，返回值为 **String** 类型
+
+`toLowerCase()` ：返回字符串的小写形式，返回值为 **String** 类型
+
+`substring(int beginIndex, int endIndex)` ：返回字符串中从下标 beginIndex 开始到 endIndex 结束的子字符串，返回值为 **String** 类型，参数为 **int** 类型
+
+`substring(int beginIndex)` ：返回字符串中从下标 beginIndex开始到字符串结尾的子字符串，返回值为 **String** 类型，参数为 **int** 类型
+
+::: tip
+
+substring 包左不包右
+
+:::
+
+`replace(char oldChar, char newChar)` ：使用参数newChar替换此字符串中出现的所有参数oldChar，返回值为 **String** 类型，参数为 `char` 类型
+
+`replace(CharSequence target, CharSequence replacement)` ：用新字符串replacement替换所有的旧字符串target，返回值为 **String** 类型
+
+`split(String regex)` ：参数regex为正则表达式，以regex所表示的字符串为分隔符，将字符串拆分成字符串数组，结尾的空字符串不包含在结果数组中，返回值为 **String[]** 类型，参数为 **String** 类型
+
+`startsWith(String prefix)` ：判断字符串是否以参数字符串开头，返回值为 **boolean** 类型，参数为 **String** 类型
+
+`startsWith(String prefix, int toffset)` ：从指定位置开始是否以参数字符串开头，返回值为 **boolean** 类型，参数 prefix 为 **String** 类型，toffset 为 **int** 类型
+
+`endsWith(String suffix)` 方法：判断字符串是否以参数字符串结尾，返回值为 **boolean** 类型，参数为 **String** 类型
+
+`indexOf(int ch)`：用于返回当前字符串中参数 ch 指定的字符第一次出现的下标
+
+`indexOf(int ch, int fromIndex)`：用于从 fromIndex(包含) 位置开始查找ch指定的字符
+
+`indexOf(String str)`：在字符串中检索 str 返回其第一次出现的位置，若找不到返回-1
+
+`indexOf(String str, int fromIndex)`：表示从字符串的 fromIndex(包含) 位置开始检索str第一次出现的位置
+
+`lastIndexOf(int ch)`：用于返回参数 ch 指定的字符最后一次出现的下标
+
+`lastIndexOf(int ch, int fromIndex)`：用于从 fromIndex(包含) 位置开始反向查找 ch 指定字符出现的下标，若找不到返回-1
+
+`lastIndexOf(String str)`：返回 str 指定字符串最后一次出现的下标
+
+`lastIndexOf(String str, int fromIndex)`：用于从 fromIndex(包含) 位置开始反向搜索的第一次出现的下标
 
 ## 三、运算
 
@@ -440,6 +514,9 @@ switch (s) {
         break;
     case "b":
         System.out.println("bbb");
+        break;
+    default:
+        // 如果 s 的值不等于任何一个 case，则执行这里的代码块
         break;
 }
 ```
