@@ -6,7 +6,7 @@
 
 <a href = 'http://linwei-zhang.gitee.io/full-stack-notes/'>
 
-<img src="./.vuepress/public/images/quantou.png" height="300" style="display: nlock; margin: 0 auto" onclick="window.location.href = 'http://linwei-zhang.gitee.io/full-stack-notes/'"/></a>
+<img src="https://gitee.com/linwei-zhang/full-stack-notes/raw/master/image-20230410152203086.png" height="300" style="display: nlock; margin: 0 auto" onclick="window.location.href = 'http://linwei-zhang.gitee.io/full-stack-notes/'"/></a>
 
 ## 📌小程序
 
