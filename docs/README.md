@@ -4,7 +4,7 @@
 
 `gitee`在线地址[http://linwei-zhang.gitee.io/full-stack-notes/](http://linwei-zhang.gitee.io/full-stack-notes/)
 
-<a href = 'http://linwei-zhang.gitee.io/full-stack-notes/'>
+<a href = 'http://linwei-zhang.gitee.io/full-stack-notes/' target="_blank">
 
 <img src="https://gitee.com/linwei-zhang/full-stack-notes/raw/master/image-20230410152203086.png"/></a>
 
