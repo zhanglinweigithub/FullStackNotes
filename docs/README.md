@@ -4,6 +4,10 @@
 
 `gitee`在线地址[http://linwei-zhang.gitee.io/full-stack-notes/](http://linwei-zhang.gitee.io/full-stack-notes/)
 
+
+
+<html>
+
 <div style="text-align:center">
     <img src="./.vuepress/public/images/quantou.png" height="300"  /><br/>
     <span style="font-size: 300%; font-weight: bold;">FullStackNotes</span><br/>
@@ -12,6 +16,10 @@
 	</span><br/><br/>
     <button  style="width: 13%; height:65px; border-radius: 5px;border-color: white; color: white; background-color: #3eaf7c" onclick="window.location.href = 'http://linwei-zhang.gitee.io/full-stack-notes/'">开始阅读</button>
 </div>
+
+</html>
+
+
 
 ## 📌小程序
 
