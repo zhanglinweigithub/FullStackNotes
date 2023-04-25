@@ -6,6 +6,8 @@
 
 <img src="https://gitee.com/linwei-zhang/full-stack-notes/raw/master/image-20230410152203086.png"/>
 
+<summary> more </summary>
+
 ## 📌小程序
 
 - [前置知识](http://linwei-zhang.gitee.io/full-stack-notes/guide/Applets/AppletsBefore.html)
