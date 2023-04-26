@@ -132,6 +132,10 @@ const navbars = [
         text: "TypeScript",
         link: "/guide/TypeScript/TypeScript.md",
       },
+      {
+        text: "Nginx",
+        link: "/guide/Nginx/Nginx.md",
+      },
     ],
   },
   {

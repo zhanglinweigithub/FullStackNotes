@@ -1892,7 +1892,554 @@ public class AsyncTaskTest {
 定时任务4:  taskId=52,name=taskExecutor2-5
 ~~~
 
+### 动态定时任务
 
+动态任务开启主要是用ThreadPoolTaskScheduler类的`schedule(Runnable task, Trigger trigger)`方法实现的，该方法有两个参数，第一个就是我们的任务类，第二个就是一个触发器，触发器 里面可以指定任务的cron，也就是执行策略。默认写法如下：
+
+~~~java
+new Trigger() {
+            @Override
+            public Date nextExecutionTime(TriggerContext triggerContext) {
+                CronTrigger trigger = new CronTrigger(taskCron);
+                Date nextExec = trigger.nextExecutionTime(triggerContext);
+                return nextExec;
+            }
+        };
+~~~
+
+::: tip
+
+new CronTrigger(taskCron)中的taskCron就是我们自定义的cron，比如"`0/5 * * * * ?`"
+
+:::
+
+**示例**
+
+1. `TaskConfig`配置还是用上个示例创建的
+2. 创建`TaskScheduledParent`做为调度任务公共父接口，下个示例我们也会用到
+
+~~~java
+/**
+ * 调度任务公共父接口
+ */
+public interface TaskScheduledParent extends Runnable{
+}
+~~~
+
+3. 创建任务`TaskScheduled01`实现`TaskScheduledParent`
+
+~~~java
+@Slf4j
+public class TaskScheduled01 implements TaskScheduledParent {
+    @Override
+    public void run() {
+        Thread current = Thread.currentThread();
+        log.info("动态定时任务1:  taskId="+current.getId()+ ",name="+current.getName());
+    }
+}
+~~~
+
+4. 创建一个测试类`Test1Controller`
+
+~~~java
+@RestController
+@RequestMapping("test1")
+public class Test1Controller {
+    // 注入ThreadPoolTaskScheduler线程池
+    @Autowired
+    private ThreadPoolTaskScheduler threadPoolTaskScheduler;
+
+    @RequestMapping("start")
+    public String start() {
+        TaskScheduled01 taskScheduled01 = new TaskScheduled01();
+        threadPoolTaskScheduler.schedule(taskScheduled01,getTrigger("0/5 * * * * ?"));
+        return "启动任务成功";
+    }
+
+    /**
+     * Trigger
+     * @param taskCron
+     * @return
+     */
+    private Trigger getTrigger(String taskCron){
+        return new Trigger() {
+            @Override
+            public Date nextExecutionTime(TriggerContext triggerContext) {
+                CronTrigger trigger = new CronTrigger(taskCron);
+                Date nextExec = trigger.nextExecutionTime(triggerContext);
+                return nextExec;
+            }
+        };
+    }
+}
+~~~
+
+5. 启动类
+
+~~~java
+@SpringBootApplication
+public class Springboot2Test04Application {
+    public static void main(String[] args){
+        SpringApplication.run(Springboot2Test04Application.class, args);
+    }
+}
+~~~
+
+6. 测试 运行程序，我们观察控制台，是没有任务输出的信息，我们在浏览器输入`http://localhost:8088/moyundong/test1/start`开启任务，这时候控制台就有任务执行的信息了。
+
+#### 开发实例
+
+在实际开发中，我们把策略都是放到数据库当中的，而且可以对策略进行修改，可以自定义启动、关闭任务，下面我们来看一个完整的实例。
+
+1. 创建数据库表`task_scheduled` 并且添加数据
+
+~~~sql
+CREATE TABLE `task_scheduled` (
+  `id` varchar(64) NOT NULL,
+  `task_key` varchar(255) DEFAULT NULL COMMENT '任务key值',
+  `task_desc` varchar(255) DEFAULT NULL COMMENT '任务描述',
+  `task_cron` varchar(255) DEFAULT NULL COMMENT '任务表达式',
+  `status` tinyint(4) DEFAULT NULL COMMENT '1启动，2停止',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `task_scheduled`(`id`, `task_key`, `task_desc`, `task_cron`, `status`) VALUES ('1', 'taskScheduled01', '定时任务01', '0/5 * * * * ?', 1);
+INSERT INTO `task_scheduled`(`id`, `task_key`, `task_desc`, `task_cron`, `status`) VALUES ('2', 'taskScheduled02', '定时任务02', '0/2 * * * * ?', 1);
+INSERT INTO `task_scheduled`(`id`, `task_key`, `task_desc`, `task_cron`, `status`) VALUES ('3', 'taskScheduled03', '定时任务03', '0/10 * * * * ?', 1);
+~~~
+
+2. 创建实体类
+
+~~~java
+@Data
+public class TaskScheduled {
+    private String id;
+    /**
+     * 任务key值 唯一
+     */
+    private String taskKey;
+    /**
+     * 任务描述
+     */
+    private String taskDesc;
+    /**
+     * 任务表达式
+     */
+    private String taskCron;
+
+    /**
+     * 是否启动 1 是 2 否
+     */
+    private Integer status;
+}
+~~~
+
+3. 创建调度任务公共父接口
+
+~~~java
+/**
+ * 调度任务公共父接口
+ */
+public interface TaskScheduledJobParent extends Runnable{
+}
+~~~
+
+4. 创建3个测试任务`TaskScheduledJob01`、`TaskScheduledJob02`、`TaskScheduledJob03`
+
+~~~java
+@Slf4j
+public class TaskScheduledJob01 implements TaskScheduledJobParent {
+    @Override
+    public void run() {
+        Thread current = Thread.currentThread();
+        log.info("动态定时任务1:  taskId="+current.getId()+ ",name="+current.getName());
+    }
+}
+~~~
+
+TaskScheduledJob02
+
+~~~java
+@Slf4j
+public class TaskScheduledJob02 implements TaskScheduledJobParent {
+    @Override
+    public void run() {
+        Thread current = Thread.currentThread();
+        log.info("动态定时任务2:  taskId="+current.getId()+ ",name="+current.getName());
+    }
+}
+~~~
+
+TaskScheduledJob03
+
+~~~java
+@Slf4j
+public class TaskScheduledJob03 implements TaskScheduledJobParent {
+    @Override
+    public void run() {
+        Thread current = Thread.currentThread();
+        log.info("动态定时任务3:  taskId="+current.getId()+ ",name="+current.getName());
+    }
+}
+~~~
+
+5. 创建任务集合类`TaskScheduledJobMap`
+
+~~~java
+public class TaskScheduledJobMap {
+    public static Map<String , TaskScheduledJobParent> taskScheduledMap = null;
+
+    /**
+     * 初始化任务集合，把我们定义的所有任务都放到集合，这里只是举例子
+     * @return
+     */
+    public static Map<String , TaskScheduledJobParent> initTask(){
+        if (taskScheduledMap == null){
+            taskScheduledMap = new ConcurrentHashMap<>();
+            TaskScheduledJobParent taskScheduled01 = new TaskScheduledJob01();
+            TaskScheduledJobParent taskScheduled02 = new TaskScheduledJob02();
+            TaskScheduledJobParent taskScheduled03 = new TaskScheduledJob03();
+            // 这里的key要和数据库里面的一致taskScheduled01、taskScheduled02、taskScheduled03
+            taskScheduledMap.put("taskScheduled01",taskScheduled01);
+            taskScheduledMap.put("taskScheduled02",taskScheduled02);
+            taskScheduledMap.put("taskScheduled03",taskScheduled03);
+        }
+        return taskScheduledMap;
+    }
+
+    /**
+     * 获取集合
+     * @return
+     */
+    public static Map<String, TaskScheduledJobParent> getTaskScheduledMap() {
+        return taskScheduledMap;
+    }
+}
+~~~
+
+6. 创建`TaskScheduledDao`
+
+~~~java
+public interface TaskScheduledDao {
+    TaskScheduled getByKey(String cronKey);
+    List<TaskScheduled> selectAll(Integer status);
+}
+~~~
+
+7. 创建`TaskScheduledDaoMapper.xml`
+
+~~~xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.moyundong.dao.TaskScheduledDao">
+
+    <select id="selectAll" resultType="TaskScheduled">
+        select  id,
+                task_key,
+                task_desc,
+                task_cron,
+                status
+            from task_scheduled
+            where 1 = 1
+            <if test="status != null and status != ''">
+                status = #{status}
+            </if>
+    </select>
+
+    <select id="getByKey" resultType="TaskScheduled">
+        select  id,
+                task_key,
+                task_desc,
+                task_cron,
+                status
+            from task_scheduled
+            where task_key = #{taskKey}
+    </select>
+</mapper>
+~~~
+
+8. 创建`TaskScheduledService`接口
+
+~~~java
+public interface TaskScheduledService {
+    /**
+     * 所有任务列表
+     */
+    List<TaskScheduled> taskList();
+
+    /**
+     * 根据任务key 启动任务
+     */
+    Boolean start(String taskKey);
+
+    /**
+     * 根据任务key 停止任务
+     */
+    Boolean stop(String taskKey);
+
+    /**
+     * 根据任务key 重启任务
+     */
+    Boolean restart(String taskKey);
+    /**
+     * 程序启动时初始化  ==> 启动所有正常状态的任务
+     */
+    void initAllTask(List<TaskScheduled> scheduledCronList);
+}
+~~~
+
+9. 创建`TaskScheduledService`接口的实现`TaskScheduledServiceImpl`
+
+~~~java
+@Slf4j
+@Service
+public class TaskScheduledServiceImpl implements TaskScheduledService{
+
+    /**
+     * 可重入锁
+     */
+    private ReentrantLock lock = new ReentrantLock();
+
+    @Autowired
+    private TaskScheduledDao taskScheduledDao;
+
+    /**
+     * 定时任务线程池
+     */
+    @Autowired
+    private ThreadPoolTaskScheduler threadPoolTaskScheduler;
+
+    /**
+     * 存放已经启动的任务map
+     */
+    private Map<String, ScheduledFuture> scheduledFutureMap = new ConcurrentHashMap<>();
+
+    @Override
+    public List<TaskScheduled> taskList() {
+        log.info("************** 获取任务列表开始 ************** ");
+        //数据库查询所有任务 => 未做分页
+        List<TaskScheduled> taskList = taskScheduledDao.selectAll(null);
+        if (CollectionUtils.isEmpty(taskList)) {
+            return new ArrayList<>();
+        }
+
+        for (TaskScheduled taskEntity : taskList) {
+            String taskKey = taskEntity.getTaskKey();
+            //是否启动标记处理
+            //taskBean.setStatus(this.isStart(taskKey));
+        }
+        log.info("************** 获取任务列表结束 ************** ");
+        return taskList;
+    }
+
+    @Override
+    public Boolean start(String taskKey) {
+        log.info("************** 启动任务 {} 开始 **************", taskKey);
+        //添加锁放一个线程启动，防止多人启动多次
+        lock.lock();
+        log.info("************** 添加任务启动锁完毕");
+        try {
+            //根据key从数据库获取任务cron信息
+            TaskScheduled scheduledTask = taskScheduledDao.getByKey(taskKey);
+            //启动任务
+            this.doStartTask(scheduledTask);
+        } finally {
+            // 释放锁
+            lock.unlock();
+            log.info("************** 释放任务启动锁完毕");
+        }
+        log.info("************** 启动任务 {} 结束 **************", taskKey);
+        return true;
+    }
+
+    @Override
+    public Boolean stop(String taskKey) {
+        log.info("************** 进入停止任务 {}  **************", taskKey);
+        //当前任务实例是否存在
+        boolean taskStartFlag = scheduledFutureMap.containsKey(taskKey);
+        log.info("************** 当前任务实例是否存在 {}", taskStartFlag);
+        if (taskStartFlag) {
+            // 从scheduledFutureMap删除关闭的实例并且获取该实例
+            ScheduledFuture scheduledFuture = scheduledFutureMap.remove(taskKey);
+            //关闭实例
+            scheduledFuture.cancel(true);
+        }
+        log.info("************** 结束停止任务 {}  **************", taskKey);
+        return taskStartFlag;
+    }
+
+    @Override
+    public Boolean restart(String taskKey) {
+        log.info("************** 进入重启任务 {}  **************", taskKey);
+        //先停止
+        this.stop(taskKey);
+        //再启动
+        return this.start(taskKey);
+    }
+
+    @Override
+    public void initAllTask() {
+        List<TaskScheduled> taskScheduledList = taskScheduledDao.selectAll(1);
+        log.info("初始化所有任务开始 ！size={}", taskScheduledList.size());
+        if (CollectionUtils.isEmpty(taskScheduledList)) {
+            return;
+        }
+        for (TaskScheduled taskScheduled : taskScheduledList) {
+            //任务 key
+            String taskKey = taskScheduled.getTaskKey();
+            //校验是否已经启动，已经启动就不用启动了
+            if (this.isStart(taskKey)) {
+                continue;
+            }
+            //启动任务
+            this.doStartTask(taskScheduled);
+        }
+        log.info("初始化所有任务结束 ！size={}", taskScheduledList.size());
+    }
+
+    /**
+     * 执行启动任务
+     */
+    private void doStartTask(TaskScheduled taskScheduled) {
+        //任务key
+        String taskKey = taskScheduled.getTaskKey();
+        //定时表达式
+        String taskCron = taskScheduled.getTaskCron();
+        //获取需要定时调度的接口
+        TaskScheduledJobParent taskScheduledJob = TaskScheduledJobMap.getTaskScheduledMap().get(taskKey);
+        log.info("************** 任务 [ {} ] ,cron={}", taskScheduled.getTaskDesc(), taskCron);
+        ScheduledFuture scheduledFuture = threadPoolTaskScheduler.schedule(taskScheduledJob, getTrigger(taskCron));
+        //将启动的任务放入 map
+        scheduledFutureMap.put(taskKey, scheduledFuture);
+    }
+    /**
+     * Trigger
+     * @param taskCron
+     * @return
+     */
+    private Trigger getTrigger(String taskCron){
+        return new Trigger() {
+            @Override
+            public Date nextExecutionTime(TriggerContext triggerContext) {
+                CronTrigger trigger = new CronTrigger(taskCron);
+                Date nextExec = trigger.nextExecutionTime(triggerContext);
+                return nextExec;
+            }
+        };
+    }
+
+    /**
+     * 任务是否已经启动，如果任务在以启动的集合里就证明踏实启动的
+     */
+    private Boolean isStart(String taskKey) {
+        //校验是否已经启动
+        if (scheduledFutureMap.containsKey(taskKey)) {
+            return true;
+        }
+        return false;
+    }
+}
+~~~
+
+10. 创建测试用的`Test2Controller`
+
+~~~java
+@RestController
+@RequestMapping("test2")
+public class Test2Controller {
+
+    @Autowired
+    private TaskScheduledService taskScheduledService;
+
+    /**
+     * 所有任务列表
+     */
+    @RequestMapping("taskList")
+    public List<TaskScheduled> taskList() {
+        return taskScheduledService.taskList();
+    }
+
+    /**
+     * 根据任务key => 启动任务
+     */
+    @RequestMapping("start")
+    public String start(@RequestParam("taskKey") String taskKey) {
+        taskScheduledService.start(taskKey);
+        return "任务启动成功";
+    }
+
+    /**
+     * 根据任务key => 停止任务
+     */
+    @RequestMapping("stop")
+    public String stop(@RequestParam("taskKey") String taskKey) {
+        taskScheduledService.stop(taskKey);
+        return "任务停止成功";
+    }
+
+    /**
+     * 根据任务key => 重启任务
+     */
+    @RequestMapping("restart")
+    public String restart(@RequestParam("taskKey") String taskKey) {
+        taskScheduledService.restart(taskKey);
+        return "任务重启成功";
+    }
+}
+~~~
+
+11. 创建初始化类`TestApplicationRunner`
+
+~~~java
+/**
+ * 系统初始化加载，可以同时有多个，通过Order(value=1)排序,value越小越先执行
+ */
+@Component
+@Order(value=1)
+@Slf4j
+public class TestApplicationRunner implements ApplicationRunner {
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        log.info("初始化任务 start");
+        TaskScheduledJobMap.initTask();
+        log.info("初始化任务 end");
+    }
+}
+~~~
+
+12. 测试
+
+~~~java
+启动服务测试，在浏览器输入:
+`http://localhost:8088/moyundong/test2/start?taskKey=taskScheduled01`,
+就能开启任务1，其它的接口大家可以自行测试。
+~~~
+
+13. 延申
+
+通常我们都是在系统启动的时候开启所有设置为开启的（status为1的任务）任务，这种情况也很好实现，我们只需要在系统启动类里面查询出所有状态为1的任务，然后逐个开启就行了。
+
+~~~java
+ @Override
+    public void initAllTask() {
+        List<TaskScheduled> taskScheduledList = taskScheduledDao.selectAll(1);
+        log.info("初始化所有任务开始 ！size={}", taskScheduledList.size());
+        if (CollectionUtils.isEmpty(taskScheduledList)) {
+            return;
+        }
+        for (TaskScheduled taskScheduled : taskScheduledList) {
+            //任务 key
+            String taskKey = taskScheduled.getTaskKey();
+            //校验是否已经启动，已经启动就不用启动了
+            if (this.isStart(taskKey)) {
+                continue;
+            }
+            //启动任务
+            this.doStartTask(taskScheduled);
+        }
+        log.info("初始化所有任务结束 ！size={}", taskScheduledList.size());
+    }
+~~~
 
 ## 九、Starter
 

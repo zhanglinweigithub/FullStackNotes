@@ -87,43 +87,74 @@ List list = Arrays.asList(1, 2, 3);
 
 ### ArrayList
 
-#### 1. 概览
+在 Java 的集合类 ArrayList 里，实际上使用的就是数组存储结构，ArrayList 对 Array 进行了封装，并增加了方便的插入、获取、扩容等操作。
 
-因为 `ArrayList` 是基于数组实现的，所以支持快速随机访问。`RandomAccess` 接口标识着该类支持快速随机访问。
+因为 ArrayList 的底层是数组，所以存取非常迅速，但是增删时，因为要移动后面的元素位置，所以增删效率相对较低。
 
-```java
-public class ArrayList<E> extends AbstractList<E>
-        implements List<E>, RandomAccess, Cloneable, java.io.Serializable
-```
+#### 1. ArrayList 存储结构
 
-数组的默认大小为 10。
+可以看到它就是一个简单的数组，用来数据存储。
 
-```java
+~~~java
+/**
+ * The array buffer into which the elements of the ArrayList are stored.
+ * The capacity of the ArrayList is the length of this array buffer. Any
+ * empty ArrayList with elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA
+ * will be expanded to DEFAULT_CAPACITY when the first element is added.
+ */
+transient Object[] elementData; // non-private to simplify nested class access
+
+/**
+ * Shared empty array instance used for default sized empty instances. We
+ * distinguish this from EMPTY_ELEMENTDATA to know how much to inflate when
+ * first element is added.
+ */
+private static final Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = {};
+
+/**
+ * Default initial capacity.
+ */
 private static final int DEFAULT_CAPACITY = 10;
-```
 
-![image-20230412163653498](./img/image-20230412163653498.png)
+~~~
 
-#### 2. 扩容
+::: tip
 
-添加元素时使用 `ensureCapacityInternal()` 方法来保证容量足够，如果不够时，需要使用 `grow()` 方法进行扩容，新容量的大小为 `oldCapacity + (oldCapacity >> 1)`，即 `oldCapacity+oldCapacity/2`。其中 `oldCapacity >> 1` 需要取整，所以新容量大约是旧容量的 `1.5` 倍左右。（`oldCapacity` 为偶数就是 1.5 倍，为奇数就是 1.5 倍-0.5）
+ArrayList 无参构造时是会共享一个长度为 0 的数组 DEFAULTCAPACITY_EMPTY_ELEMENTDATA. 只有当第一个元素添加时才会第一次扩容，这样也防止了创建对象时更多的内存浪费。
 
-扩容操作需要调用 `Arrays.copyOf()` 把原数组整个复制到新数组中，这个操作代价很高，因此最好在创建 `ArrayList` 对象时就指定大概的容量大小，减少扩容操作的次数。
+:::
+
+
+
+
+
+#### 2. ArrayList 扩容机制
+
+ArrayList 在初始化时，是共享一个长度为 0 的数组的，当第一个元素添加进来时会进行第一次扩容， ArrayList 每当空间不够使用时就会进行一次扩容
+
+**add () 方法**
 
 ```java
+/**
+ * Appends the specified element to the end of this list.
+ *
+ * @param e element to be appended to this list
+ * @return <tt>true</tt> (as specified by {@link Collection#add})
+ */
 public boolean add(E e) {
-    ensureCapacityInternal(size + 1);  // 增加 mod 计数
+    ensureCapacityInternal(size + 1);  // Increments modCount!!
     elementData[size++] = e;
     return true;
 }
-
+// 开始检查当前插入位置时数组容量是否足够
 private void ensureCapacityInternal(int minCapacity) {
+    // ArrayList 是否未初始化，未初始化是则初始化 ArrayList ，容量给 10.
     if (elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA) {
         minCapacity = Math.max(DEFAULT_CAPACITY, minCapacity);
     }
     ensureExplicitCapacity(minCapacity);
 }
-
+// 比较插入 index 是否大于当前数组长度，大于就 grow 进行扩容
 private void ensureExplicitCapacity(int minCapacity) {
     modCount++;
     // overflow-conscious code
@@ -131,674 +162,924 @@ private void ensureExplicitCapacity(int minCapacity) {
         grow(minCapacity);
 }
 
+/**
+ * Increases the capacity to ensure that it can hold at least the
+ * number of elements specified by the minimum capacity argument.
+ *
+ * @param minCapacity the desired minimum capacity
+ */
 private void grow(int minCapacity) {
     // overflow-conscious code
     int oldCapacity = elementData.length;
+    // 扩容规则是当前容量 + 当前容量右移1位。也就是1.5倍。
     int newCapacity = oldCapacity + (oldCapacity >> 1);
     if (newCapacity - minCapacity < 0)
         newCapacity = minCapacity;
+    // 是否大于 Int 最大值，也就是容量最大值
     if (newCapacity - MAX_ARRAY_SIZE > 0)
         newCapacity = hugeCapacity(minCapacity);
     // minCapacity is usually close to size, so this is a win:
+    // 拷贝元素到扩充后的新的 ArrayList
     elementData = Arrays.copyOf(elementData, newCapacity);
 }
 ```
 
-#### 3. 删除元素
+1. 开始检查当前插入位置时数组容量是否足够
 
-需要调用 `System.arraycopy()` 将 `index+1` 后面的元素都复制到 `index` 位置上，该操作的时间复杂度为 `O(N)`，可以看到 `ArrayList` 删除元素的代价是非常高的。
+2. ArrayList 是否未初始化，未初始化是则初始化 ArrayList ，容量给 10.
 
-```java
-public E remove(int index) {
-    rangeCheck(index);
-    modCount++;
-    E oldValue = elementData(index);
-    int numMoved = size - index - 1;
-    if (numMoved > 0)
-        System.arraycopy(elementData, index+1, elementData, index, numMoved);
-    elementData[--size] = null; // clear to let GC do its work
-    return oldValue;
-}
-```
+3. 判断当前要插入的下标是否大于容量
 
-#### 4. 序列化
+   1. 不大于，插入新增元素，新增流程完毕。
 
-`ArrayList` 基于数组实现，并且具有动态扩容特性，因此保存元素的数组不一定都会被使用，那么就没必要全部进行序列化。
+4. 如果所需的容量大于当前容量，开始扩充。
 
-保存元素的数组 `elementData` 使用 `transient` 修饰，该关键字声明数组默认不会被序列化。
+   1. 扩容规则是当前容量 + 当前容量右移 1 位。也就是 1.5 倍。
 
-```java
-transient Object[] elementData; // 非私有以简化嵌套类访问
-```
+      `int newCapacity = oldCapacity + (oldCapacity >> 1);`
 
-`ArrayList` 实现了 `writeObject()` 和 `readObject()` 来控制只序列化数组中有元素填充那部分内容。
+   2. 如果扩充之后还是小于需要的最小容量，则把所需最小容量作为容量。
 
-```java
-private void readObject(java.io.ObjectInputStream s)
-    throws java.io.IOException, ClassNotFoundException {
-    elementData = EMPTY_ELEMENTDATA;
+   3. 如果容量大于默认最大容量，则使用 最大值 Integer 作为容量。
 
-    // Read in size, and any hidden stuff
-    s.defaultReadObject();
+   4. 拷贝老数组元素到扩充后的新数组
 
-    // Read in capacity
-    s.readInt(); // ignored
+5. 插入新增元素，新增流程完毕。
 
-    if (size > 0) {
-        // be like clone(), allocate array based upon size not capacity
-        ensureCapacityInternal(size);
+#### 3. ArrayList 数据新增
 
-        Object[] a = elementData;
-        // Read in all elements in the proper order.
-        for (int i=0; i<size; i++) {
-            a[i] = s.readObject();
-        }
-    }
-}
-private void writeObject(java.io.ObjectOutputStream s)
-    throws java.io.IOException{
-    // Write out element count, and any hidden stuff
-    int expectedModCount = modCount;
-    s.defaultWriteObject();
+上面分析扩容时候已经看到了新增一个元素的具体逻辑，因为底层是数组，所以直接指定下标赋值即可，非常简单。
 
-    // Write out size as capacity for behavioural compatibility with clone()
-    s.writeInt(size);
-
-    // Write out all elements in the proper order.
-    for (int i=0; i<size; i++) {
-        s.writeObject(elementData[i]);
-    }
-
-    if (modCount != expectedModCount) {
-        throw new ConcurrentModificationException();
-    }
-}
-```
-
-序列化时需要使用 `ObjectOutputStream` 的 `writeObject()` 将对象转换为字节流并输出。而 `writeObject()` 方法在传入的对象存在 `writeObject()` 的时候会去反射调用该对象的 `writeObject()` 来实现序列化。反序列化使用的是 `ObjectInputStream` 的 `readObject()` 方法，原理类似。
-
-```java
-ArrayList list = new ArrayList();
-ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
-oos.writeObject(list);
-```
-
-#### 5. Fail-Fast
-
-`modCount` 用来记录 `ArrayList` 结构发生变化的次数。结构发生变化是指添加或者删除至少一个元素的所有操作，或者是调整内部数组的大小，仅仅只是设置元素的值不算结构发生变化。
-
-在进行序列化或者迭代等操作时，需要比较操作前后 `modCount` 是否改变，如果改变了需要抛出 `ConcurrentModificationException`。代码参考上面序列化中的 `writeObject()` 方法。
-
-### CopyOnWriteArrayList
-
-#### 1. 读写分离
-
-写操作在一个复制的数组上进行，读操作还是在原始数组中进行，读写分离，互不影响。
-
-写操作需要加锁，防止并发写入时导致写入数据丢失。
-
-写操作结束之后需要把原始数组指向新的复制数组。
-
-```java
+~~~java
 public boolean add(E e) {
-    final ReentrantLock lock = this.lock;
-    lock.lock();
-    try {
-        Object[] elements = getArray();
-        int len = elements.length;
-        Object[] newElements = Arrays.copyOf(elements, len + 1);
-        newElements[len] = e;
-        setArray(newElements);
-        return true;
-    } finally {
-        lock.unlock();
-    }
+    ensureCapacityInternal(size + 1);  // Increments modCount!!
+    elementData[size++] = e; // 直接赋值
+    return true;
 }
+~~~
 
-final void setArray(Object[] a) {
-    array = a;
+但是还有一种新增数据的情况，就是新增时指定了要加入的下标位置。
+
+~~~java
+/**
+ * Inserts the specified element at the specified position in this
+ * list. Shifts the element currently at that position (if any) and
+ * any subsequent elements to the right (adds one to their indices).
+ *
+ * @param index index at which the specified element is to be inserted
+ * @param element element to be inserted
+ * @throws IndexOutOfBoundsException {@inheritDoc}
+ */
+public void add(int index, E element) {
+    rangeCheckForAdd(index);
+    ensureCapacityInternal(size + 1);  // Increments modCount!!
+     // 指定下标开始所有元素后移一位
+    System.arraycopy(elementData, index, elementData, index + 1,size - index);
+    elementData[index] = element;
+    size++;
 }
-@SuppressWarnings("unchecked")
-private E get(Object[] a, int index) {
-    return (E) a[index];
+~~~
+
+可以发现这种新增多了关键的一行，它的作用是把从要插入的坐标开始的元素都向后移动一位，这样才能给指定下标腾出空间，才可以放入新增的元素。
+
+比如你要在下标为 3 的位置新增数据 100，那么下标为 3 开始的所有元素都需要后移一位。
+
+![image-20230426132123248](./img/image-20230426132123248.png)
+
+#### 4.ArrayList 数据获取
+
+数据下标获取元素值，**一步到位，不必多言**。
+
+~~~java
+public E get(int index) {
+    rangeCheck(index);
+    return elementData(index);
 }
-```
-
-#### 2. 适用场景
-
-`CopyOnWriteArrayList` 在写操作的同时允许读操作，大大提高了读操作的性能，因此很适合读多写少的应用场景。
-
-但是 `CopyOnWriteArrayList` 有其缺陷：
-
-- 内存占用：在写操作时需要复制一个新的数组，使得内存占用为原来的两倍左右；
-- 数据不一致：读操作不能读取实时性的数据，因为部分写操作的数据还未同步到读数组中。
-
-所以 `CopyOnWriteArrayList` 不适合内存敏感以及对实时性要求很高的场景。
+E elementData(int index) {
+    return (E) elementData[index];
+}
+~~~
 
 ### LinkedList
 
-#### 1. 概览
+#### 1.概览
 
-基于双向链表实现，使用 `Node` 存储链表节点信息。
+是一个典型的**双向链表**结构，item 用来存放元素值；next 指向下一个 node 节点，prev 指向上一个 node 节点。
 
-```java
+![image-20230426132604257](./img/image-20230426132604257.png)
+
+LinkedList 无参构造里没有任何操作，不过我们通过查看变量 first、last 可以发现它们就是存储链表第一个和最后 一个的节点。
+
+~~~java
+transient int size = 0;
+/**
+ * Pointer to first node.
+ * Invariant: (first == null && last == null) ||
+ *            (first.prev == null && first.item != null)
+ */
+transient Node<E> first;
+
+/**
+ * Pointer to last node.
+ * Invariant: (first == null && last == null) ||
+ *            (last.next == null && last.item != null)
+ */
+transient Node<E> last;
+
+/**
+ * Constructs an empty list.
+ */
+public LinkedList() {
+}
+~~~
+
+变量 first 和 last 都是 Node 类型，继而查看 Node 源码。
+
+~~~java
 private static class Node<E> {
     E item;
     Node<E> next;
     Node<E> prev;
+
+    Node(Node<E> prev, E element, Node<E> next) {
+        this.item = element;
+        this.next = next;
+        this.prev = prev;
+    }
 }
-```
+~~~
 
-每个链表存储了 `first` 和 `last` 指针：
+可以看到这就是一个典型的**双向链表**结构，item 用来存放元素值；next 指向下一个 node 节点，prev 指向上一个 node 节点。
 
-```java
-transient Node<E> first;
-transient Node<E> last;
-```
+#### 2.LinkedList 数据获取
 
-![image-20230412164138243](./img/image-20230412164138243.png)
+链表不像数组是连续的内存地址，链表是通过 next 和 prev 指向记录链接路径的，所以查找指定位置的 node 只能遍历查找
 
-#### 2. 与 ArrayList 的比较
+~~~java
+public E get(int index) {
+    checkElementIndex(index);
+    return node(index).item;
+}
+/**
+ * Returns the (non-null) Node at the specified element index.
+ */
+// 遍历查找 index 位置的节点信息
+Node<E> node(int index) {
+    // assert isElementIndex(index);
+    // 这里判断 index 是在当前链表的前半部分还是后半部分，然后决定是从
+    // first 向后查找还是从 last 向前查找。
+    if (index < (size >> 1)) {
+        Node<E> x = first;
+        for (int i = 0; i < index; i++)
+            x = x.next;
+        return x;
+    } else {
+        Node<E> x = last;
+        for (int i = size - 1; i > index; i--)
+            x = x.prev;
+        return x;
+    }
+}
+~~~
 
-`ArrayList` 基于动态数组实现，`LinkedList` 基于双向链表实现。`ArrayList` 和 `LinkedList` 的区别可以归结为数组和链表的区别：
+查找会首先判断 index 是在当前链表的前半部分还是后半部分，然后决定是从 first 向后查找还是从 last 向前查找。这样可以增加查找速度。
 
-- 数组支持随机访问，但插入删除的代价很高，需要移动大量元素；
-- 链表不支持随机访问，但插入删除只需要改变指针。
+#### 3.LinkedList 数据新增
+
+因为 LinkedList 是链表，所以 LinkedList 的新增也就是链表的数据新增了，这时候要根据要插入的位置的区分操作。
+
+**尾部插入**
+
+默认的 add 方式就是尾部新增了，尾部新增的逻辑很简单，只需要创建一个新的节点，新节点的 prev 设置现有的末尾节点，现有的末尾 Node 指向新节点 Node，新节点的 next 设为 null 即可。
+
+~~~java
+public boolean add(E e) {
+    linkLast(e);
+    return true;
+}
+void linkLast(E e) {
+    final Node<E> l = last;
+    // 新节点，prev 为当前尾部节点，e为元素值，next 为 null，
+    final Node<E> newNode = new Node<>(l, e, null);
+    last = newNode;
+    if (l == null)
+        first = newNode;
+    else
+         // 目前的尾部节点 next 指向新的节点
+        l.next = newNode;
+    size++;
+    modCount++;
+}
+~~~
+
+**中间新增**
+
+指定位置插入元素主要分为两个部分，第一个部分是查找 node 节点部分，这部分就是上面介绍的 LinkedList 数据获取部分，
+
+第二个部分是在查找到的 node 对象后插入元素。主要就是修改 node 的 next 指向为新节点，新节点的 prev 指向为查找到的 node 节点，新节点的 next 指向为查找到的 node 节点的 next 指向。查找到的 node 节点的 next 指向的 node 节点的 prev 修改为新节点。
+
+![image-20230426132954024](./img/image-20230426132954024.png)
+
+~~~java
+public void add(int index, E element) {
+    checkPositionIndex(index);
+    if (index == size)
+        // 如果位置就是当前链表尾部，直接尾插
+        linkLast(element);
+    else
+        // 获取 index 位置的节点，插入新的元素
+        linkBefore(element, node(index));
+}
+
+/**
+ * Inserts element e before non-null Node succ.
+ */
+// 在指定节点处新增元素，修改指定元素的下一个节点为新增元素，新增元素的下一个节点是查找到的 node 的next节点指向，
+// 新增元素的上一个节点为查找到的 node 节点，查找到的 node 节点的 next 指向 node 的 prev 修改为新 Node
+void linkBefore(E e, Node<E> succ) {
+    // assert succ != null;
+    final Node<E> pred = succ.prev;
+    final Node<E> newNode = new Node<>(pred, e, succ);
+    succ.prev = newNode;
+    if (pred == null)
+        first = newNode;
+    else
+        pred.next = newNode;
+    size++;
+    modCount++;
+}
+~~~
+
+#### 4.LinkedList 数据删除
+
+node (index) 方法依旧是二分查找目标位置，然后进行删除操作。比如要删除的节点叫做 X，删除操作主要是修改 X 节点的 prev 节点的 next 指向为 X 节点的 next 指向，修改 X 节点的 next 节点的 prev 指向为 X 节点的 prev 指向，最后把 X 节点的 prev 和 next 指向清空。
+
+![image-20230426133048680](./img/image-20230426133048680.png)
+
+~~~java
+public E remove(int index) {
+    checkElementIndex(index);
+    return unlink(node(index));
+}
+/**
+ * Unlinks non-null node x.
+ */
+E unlink(Node<E> x) {
+    // assert x != null;
+    final E element = x.item;
+    final Node<E> next = x.next;
+    final Node<E> prev = x.prev;
+
+    if (prev == null) {
+        first = next;
+    } else {
+        prev.next = next;
+        x.prev = null;
+    }
+
+    if (next == null) {
+        last = prev;
+    } else {
+        next.prev = prev;
+        x.next = null;
+    }
+
+    x.item = null;
+    size--;
+    modCount++;
+    return element;
+}
+~~~
 
 ### HashMap
 
- JDK 1.7 为主
-
 #### 1. 存储结构
 
-内部包含了一个 `Entry` 类型的数组 `table`。`Entry` 存储着键值对。它包含了四个字段，从 `next` 字段我们可以看出 `Entry` 是一个链表。即数组中的每个位置被当成一个桶，一个桶存放一个链表。`HashMap` 使用拉链法来解决冲突，同一个链表中存放哈希值和散列桶取模运算结果相同的 `Entry`。
+存储结构主要是**数组加链表**
 
-![image-20230412164301719](./img/image-20230412164301719.png)
+HashMap 的数据存储结构是一个 `Node<K,V>` 数组，在（Java 7 中是 `Entry<K,V>` 数组，但结构相同）
 
-```java
-transient Entry[] table;
-
-static class Entry<K,V> implements Map.Entry<K,V> {
-    final K key;
-    V value;
-    Entry<K,V> next;
-    int hash;
-
-    Entry(int h, K k, V v, Entry<K,V> n) {
-        value = v;
-        next = n;
-        key = k;
-        hash = h;
-    }
-
-    public final K getKey() {
-        return key;
-    }
-
-    public final V getValue() {
-        return value;
-    }
-
-    public final V setValue(V newValue) {
-        V oldValue = value;
-        value = newValue;
-        return oldValue;
-    }
-
-    public final boolean equals(Object o) {
-        if (!(o instanceof Map.Entry))
-            return false;
-        Map.Entry e = (Map.Entry)o;
-        Object k1 = getKey();
-        Object k2 = e.getKey();
-        if (k1 == k2 || (k1 != null && k1.equals(k2))) {
-            Object v1 = getValue();
-            Object v2 = e.getValue();
-            if (v1 == v2 || (v1 != null && v1.equals(v2)))
-                return true;
-        }
-        return false;
-    }
-
-    public final int hashCode() {
-        return Objects.hashCode(getKey()) ^ Objects.hashCode(getValue());
-    }
-
-    public final String toString() {
-        return getKey() + "=" + getValue();
-    }
+~~~java
+public class HashMap<K,V> extends AbstractMap<K,V> implements Map<K,V>, Cloneable, Serializable {
+    // 数组
+    transient Node<K,V>[] table;    
+	static class Node<K,V> implements Map.Entry<K,V> {
+        final int hash;
+        final K key;
+        V value;
+        // 链表
+        Node<K,V> next;
+        ....
+	}
+	.....
 }
-```
+~~~
 
-#### 2. 拉链法的工作原理
+![image-20230426125316863](./img/image-20230426125316863.png)
 
-```java
-HashMap<String, String> map = new HashMap<>();
-map.put("K1", "V1");
-map.put("K2", "V2");
-map.put("K3", "V3");
-```
-
-- 新建一个 `HashMap`，默认大小为 `16`；
-- 插入 `<K1,V1>` 键值对，先计算 K1 的 hashCode 为 115，使用除留余数法得到所在的桶下标 115%16=3。
-- 插入 `<K2,V2>` 键值对，先计算 K2 的 hashCode 为 118，使用除留余数法得到所在的桶下标 118%16=6。
-- 插入 `<K3,V3>` 键值对，先计算 K3 的 hashCode 为 118，使用除留余数法得到所在的桶下标 118%16=6，插在 `<K2,V2>` 前面。
-
-应该注意到链表的插入是以头插法方式进行的，例如上面的 `<K3,V3>` 不是插在 `<K2,V2>` 后面，而是插入在链表头部。
-
-查找需要分成两步进行：
-
-- 计算键值对所在的桶；
-- 在链表上顺序查找，时间复杂度显然和链表的长度成正比
-
-![image-20230412164420544](./img/image-20230412164420544.png)
-
-#### 3. put 操作
-
-```java
-public V put(K key, V value) {
-    if (table == EMPTY_TABLE) {
-        inflateTable(threshold);
-    }
-    // 键为 null 单独处理
-    if (key == null)
-        return putForNullKey(value);
-    int hash = hash(key);
-    // 确定桶下标
-    int i = indexFor(hash, table.length);
-    // 先找出是否已经存在键为 key 的键值对，如果存在的话就更新这个键值对的值为 value
-    for (Entry<K,V> e = table[i]; e != null; e = e.next) {
-        Object k;
-        if (e.hash == hash && ((k = e.key) == key || key.equals(k))) {
-            V oldValue = e.value;
-            e.value = value;
-            e.recordAccess(this);
-            return oldValue;
-        }
-    }
-
-    modCount++;
-    // 插入新键值对
-    addEntry(hash, key, value, i);
-    return null;
-}
-```
+#### 2.HashMap 的 put
 
 `HashMap` 允许插入键为 `null` 的键值对。但是因为无法调用 `null` 的 `hashCode()` 方法，也就无法确定该键值对的桶下标，只能通过强制指定一个桶下标来存放。`HashMap` 使用第 0 个桶存放键为 `null` 的键值对。
 
-```java
-private V putForNullKey(V value) {
-    for (Entry<K,V> e = table[0]; e != null; e = e.next) {
-        if (e.key == null) {
+~~~java
+public V put(K key, V value) {
+    return putVal(hash(key), key, value, false, true);
+}
+// 计算哈希值 与（&）、非（~）、或（|）、异或（^）
+static final int hash(Object key) {
+    int h;
+    return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+}
+final V putVal(int hash, K key, V value, boolean onlyIfAbsent, boolean evict) {
+   
+    Node<K,V>[] tab; Node<K,V> p; int n, i;
+    // 如果数组为空，进行 resize() 初始化
+    if ((tab = table) == null || (n = tab.length) == 0)
+        n = (tab = resize()).length;
+    // 如果计算的位置上Node不存在，直接创建节点插入
+    if ((p = tab[i = (n - 1) & hash]) == null)
+        tab[i] = newNode(hash, key, value, null);
+    else {
+        // 如果计算的位置上Node 存在，链表处理
+        Node<K,V> e; K k;
+        // 如果 hash 值，k 值完全相同，直接覆盖
+        if (p.hash == hash &&((k = p.key) == key || (key != null && key.equals(k))))
+            e = p;
+        // 如果 index 位置元素已经存在，且是红黑树
+        else if (p instanceof TreeNode)
+            e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
+        else {
+            // 如果这次要放入的值不存在
+            for (int binCount = 0; ; ++binCount) {
+                // 尾插法
+                if ((e = p.next) == null) {
+                    // 找到节点链表中next为空的节点，创建新的节点插入
+                    p.next = newNode(hash, key, value, null);
+                    // 如果节点链表中数量超过TREEIFY_THRESHOLD（8）个，转化为红黑树
+                    if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
+                        treeifyBin(tab, hash);
+                    break;
+                }
+                // 如果节点链表中有发现已有相同key
+                if (e.hash == hash &&
+                    ((k = e.key) == key || (key != null && key.equals(k))))
+                    break;
+                p = e;
+            }
+        }
+        // 如果节点 e 有值，放入数组 table[]
+        if (e != null) { // existing mapping for key
             V oldValue = e.value;
-            e.value = value;
-            e.recordAccess(this);
+            if (!onlyIfAbsent || oldValue == null)
+                e.value = value;
+            afterNodeAccess(e);
             return oldValue;
         }
     }
-    modCount++;
-    addEntry(0, null, value, 0);
+ 
+    ++modCount;
+    // 当前大小大于临界大小，扩容
+    if (++size > threshold)
+        resize();
+    afterNodeInsertion(evict);
     return null;
 }
-```
+~~~
 
-使用链表的头插法，也就是新的键值对插在链表的头部，而不是链表的尾部。
+举个例子，如果 put 的 key 为字母 a，当前 HashMap 容量是初始容量 16，计算出位置是 1。
 
-```java
-void addEntry(int hash, K key, V value, int bucketIndex) {
-    if ((size >= threshold) && (null != table[bucketIndex])) {
-        resize(2 * table.length);
-        hash = (null != key) ? hash(key) : 0;
-        bucketIndex = indexFor(hash, table.length);
-    }
+~~~java
+// int hash = key.hashCode()
+// hash = hash ^ (hash >>> 16)
+// 公式 index = (n - 1) & hash // n 是容量
+    
+hash HEX(97)  = 0110 0001‬
+n-1  HEX(15)  = 0000 1111
+--------------------------
+         结果  = 0000 0001
+// 计算得到位置是 1
 
-    createEntry(hash, key, value, bucketIndex);
+~~~
+
+**总结HashMap的put过程**
+
+1. 计算 key 的 hash 值。
+
+   计算方式是 `(key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);`
+
+2. 检查当前数组是否为空，为空需要进行初始化，初始化容量是 **16** ，负载因子默认 **0.75**。
+
+3. 计算 key 在数组中的坐标。
+
+   计算方式：`(容量 - 1) & hash`.
+
+   因为容量总是 2 的次方，所以 - 1 的值的二进制**总是全1**。方便与 hash 值进行**与**运算。
+
+4. 如果计算出的坐标元素为空，创建节点加入，put 结束。
+
+   1. 如果当前数组容量大于负载因子设置的容量，**进行扩容**。
+
+5. 如果计算出的坐标元素有值。
+
+   1. 如果坐标上的元素值和要加入的值 key 完全一样，覆盖原有值。
+
+   2. 如果坐标上的元素是**红黑树**，把要加入的值和 key 加入到红黑树。
+
+   3. 如果坐标上的元素和要加入的元素不同（**尾插法**增加）。
+
+      1. 如果 next 节点为空，把要加入的值和 key 加入 next 节点。
+
+      2. 如果 next 节点不为空，循环查看 next 节点。
+
+         如果发现有 next 节点的 key 和要加入的 key 一样，对应的值替换为新值。
+
+      3. 如果循环 next 节点查找**超过8层**还不为空，把这个位置元素转换为**红黑树**。
+
+#### 3.HashMap 的 get
+
+~~~java
+public V get(Object key) {
+    Node<K,V> e;
+    return (e = getNode(hash(key), key)) == null ? null : e.value;
 }
-
-void createEntry(int hash, K key, V value, int bucketIndex) {
-    Entry<K,V> e = table[bucketIndex];
-    // 头插法，链表头部指向新的键值对
-    table[bucketIndex] = new Entry<>(hash, key, value, e);
-    size++;
-}
-Entry(int h, K k, V v, Entry<K,V> n) {
-    value = v;
-    next = n;
-    key = k;
-    hash = h;
-}
-```
-
-#### 4. 确定桶下标
-
-很多操作都需要先确定一个键值对所在的桶下标。
-
-```java
-int hash = hash(key);
-int i = indexFor(hash, table.length);
-```
-
-**4.1 计算 hash 值**
-
-```java
-final int hash(Object k) {
-    int h = hashSeed;
-    if (0 != h && k instanceof String) {
-        return sun.misc.Hashing.stringHash32((String) k);
-    }
-
-    h ^= k.hashCode();
-
-    // This function ensures that hashCodes that differ only by
-    // constant multiples at each bit position have a bounded
-    // number of collisions (approximately 8 at default load factor).
-    h ^= (h >>> 20) ^ (h >>> 12);
-    return h ^ (h >>> 7) ^ (h >>> 4);
-}
-public final int hashCode() {
-    return Objects.hashCode(key) ^ Objects.hashCode(value);
-}
-```
-
-**4.2 取模**
-
-令 x = 1<<4，即 x 为 2 的 4 次方，它具有以下性质：
-
-```text
-x   : 00010000
-x-1 : 00001111
-```
-
-令一个数 y 与 x-1 做与运算，可以去除 y 位级表示的第 4 位以上数：
-
-```text
-y       : 10110010
-x-1     : 00001111
-y&(x-1) : 00000010
-```
-
-这个性质和 y 对 x 取模效果是一样的：
-
-```text
-y   : 10110010
-x   : 00010000
-y%x : 00000010
-```
-
-我们知道，位运算的代价比求模运算小的多，因此在进行这种计算时用位运算的话能带来更高的性能。
-
-确定桶下标的最后一步是将 `key` 的 `hash` 值对桶个数取模：`hash%capacity`，如果能保证 `capacity` 为 2 的 n 次方，那么就可以将这个操作转换为位运算。
-
-```java
-static int indexFor(int h, int length) {
-    return h & (length-1);
-}
-```
-
-#### 5. 扩容-基本原理
-
-设 `HashMap` 的 `table` 长度为 M，需要存储的键值对数量为 N，如果哈希函数满足均匀性的要求，那么每条链表的长度大约为 `N/M`，因此查找的复杂度为 `O(N/M)`。
-
-为了让查找的成本降低，应该使 `N/M` 尽可能小，因此需要保证 M 尽可能大，也就是说 `table` 要尽可能大。`HashMap` 采用动态扩容来根据当前的 N 值来调整 M 值，使得空间效率和时间效率都能得到保证。
-
-和扩容相关的参数主要有：`capacity`、`size`、`threshold` 和 `load_factor`。
-
-|    参数    | 含义                                                         |
-| :--------: | :----------------------------------------------------------- |
-|  capacity  | table 的容量大小，默认为 16。需要注意的是 capacity 必须保证为 2 的 n 次方。 |
-|    size    | 键值对数量。                                                 |
-| threshold  | size 的临界值，当 size 大于等于 threshold 就必须进行扩容操作。 |
-| loadFactor | 装载因子，table 能够使用的比例，threshold = (int)(capacity* loadFactor)。 |
-
-```java
-static final int DEFAULT_INITIAL_CAPACITY = 16;
-
-static final int MAXIMUM_CAPACITY = 1 << 30;
-
-static final float DEFAULT_LOAD_FACTOR = 0.75f;
-
-transient Entry[] table;
-
-transient int size;
-
-int threshold;
-
-final float loadFactor;
-
-transient int modCount;
-```
-
-从下面的添加元素代码中可以看出，当需要扩容时，令 `capacity` 为原来的两倍。
-
-```java
-void addEntry(int hash, K key, V value, int bucketIndex) {
-    Entry<K,V> e = table[bucketIndex];
-    table[bucketIndex] = new Entry<>(hash, key, value, e);
-    if (size++ >= threshold)
-        resize(2 * table.length);
-}
-```
-
-扩容使用 `resize()` 实现，需要注意的是，扩容操作同样需要把 `oldTable` 的所有键值对重新插入 `newTable` 中，因此这一步是很费时的。
-
-```java
-void resize(int newCapacity) {
-    Entry[] oldTable = table;
-    int oldCapacity = oldTable.length;
-    if (oldCapacity == MAXIMUM_CAPACITY) {
-        threshold = Integer.MAX_VALUE;
-        return;
-    }
-    Entry[] newTable = new Entry[newCapacity];
-    transfer(newTable);
-    table = newTable;
-    threshold = (int)(newCapacity * loadFactor);
-}
-
-void transfer(Entry[] newTable) {
-    Entry[] src = table;
-    int newCapacity = newTable.length;
-    for (int j = 0; j < src.length; j++) {
-        Entry<K,V> e = src[j];
-        if (e != null) {
-            src[j] = null;
+final Node<K,V> getNode(int hash, Object key) {
+    Node<K,V>[] tab; Node<K,V> first, e; int n; K k;
+    // 只有在存储数组已经存在的情况下进入这个 if
+    if ((tab = table) != null && (n = tab.length) > 0 &&
+        (first = tab[(n - 1) & hash]) != null) {
+        // first 是获取的坐标上元素
+        if (first.hash == hash && // always check first node
+            ((k = first.key) == key || (key != null && key.equals(k))))
+            // key 相同，说明first是想要的元素，返回
+            return first;
+        if ((e = first.next) != null) {
+            if (first instanceof TreeNode)
+                // 如果是红黑树，从红黑树中查找结果
+                return ((TreeNode<K,V>)first).getTreeNode(hash, key);
             do {
-                Entry<K,V> next = e.next;
-                int i = indexFor(e.hash, newCapacity);
-                e.next = newTable[i];
-                newTable[i] = e;
-                e = next;
-            } while (e != null);
+                // 循环遍历查找
+                if (e.hash == hash &&
+                    ((k = e.key) == key || (key != null && key.equals(k))))
+                    return e;
+            } while ((e = e.next) != null);
         }
     }
-}
-```
+    return null;
+ }
+~~~
 
-#### 6. 扩容-重新计算桶下标
+**get方法流程总结**
 
-在进行扩容时，需要把键值对重新计算桶下标，从而放到对应的桶上。在前面提到，`HashMap` 使用 `hash%capacity` 来确定桶下标。`HashMap` `capacity` 为 2 的 n 次方这一特点能够极大降低重新计算桶下标操作的复杂度。
+1. 计算 key 的 hash 值。
+2. 如果存储数组不为空，且计算得到的位置上的元素不为空。继续，否则，返回 Null。
+3. 如果获取到的元素的 key 值相等，说明查找到了，返回元素。
+4. 如果获取到的元素的 key 值不相等，查找 next 节点的元素。
+   1. 如果元素是红黑树，在红黑树中查找。
+   2. 不是红黑树，遍历 next 节点查找，找到则返回。
 
-假设原数组长度 `capacity` 为 16，扩容之后 `new capacity` 为 32：
+#### 4. HashMap 的 Hash 规则
 
-```html
-capacity     : 00010000
-new capacity : 00100000
-```
+1. 计算 hash 值 int hash = key.hashCode ()。
+2. **与或**上 hash 值无符号右移 16 位。 `hash = hash ^ (hash>>> 16)`。
+3. 位置计算公式 `index = (n - 1) & hash` ，其中 `n` 是容量。
 
-对于一个 `Key`，它的哈希值 `hash` 在第 5 位：
+**例：**假设 hash 值是 `0001 0100 1100 0010 0110 0001‬ 0010 0000`，当前容量是 16
 
-- 为 0，那么 hash%00010000 = hash%00100000，桶位置和原来一致；
-- 为 1，hash%00010000 = hash%00100000 + 16，桶位置是原位置 + 16。
+~~~java
+hash        = 0001 0100 1100 0010 0110 0001‬ 0010 0000  ---
+                                                         | 与或计算
+hash >>> 16 = 0000 0000 0000 0000 0001 0100 1100 0010  ---
+------------------------------------------------------ 
+hash 结果    = 0001 0100 1100 0010 0111 0101 1110 0100 ---
+                                                         | & 与运算
+容量 -1      = 0000 0000 0000 0000 0000 0000 0000 1111 ---
+------------------------------------------------------
+# 得到位置    = 0000 0000 0000 0000 0000 0000 0000 0100 得到位置是 4
+~~~
 
-#### 7. 计算数组容量
+如果又新增一个数据，得到 hash 值是 `0100 0000 1110 0010 1010 0010‬ 0001 0000` ，容量还是 16
 
-`HashMap` 构造函数允许用户传入的容量不是 2 的 n 次方，因为它可以自动地将传入的容量转换为 2 的 n 次方。
+~~~java
+hash        = 0100 0000 1110 0010 1010 0010‬ 0001 0000  ---
+                                                         | 与或计算
+hash >>> 16 = 0000 0000 0000 0000 0001 0100 1100 0010  ---
+------------------------------------------------------ 
+hash 结果    = 0100 0000 1110 0010 1011 0110 1101 0010 ---
+                                                         | & 与运算
+容量 -1      = 0000 0000 0000 0000 0000 0000 0000 1111 ---
+------------------------------------------------------
+# 得到位置    = 0000 0000 0000 0000 0000 0000 0000 0010 得到位置是 2
+~~~
 
-先考虑如何求一个数的掩码，对于 10010000，它的掩码为 11111111，可以使用以下方法得到：
+如果不经过 `hash ^ (hash >>> 16)` 运算，位置会有什么变化呢？
 
-```text
-mask |= mask >> 1    11011000
-mask |= mask >> 2    11111110
-mask |= mask >> 4    11111111
-```
+~~~java
+hash        = 0001 0100 1100 0010 0110 0001‬ 0010 0000
+容量 -1      = 0000 0000 0000 0000 0000 0000 0000 1111
+------------------------------------------------------
+        结果 = 0000 0000 0000 0000 0000 0000 0000 0000
+# 得到位置是 0 
+    
+hash        = 0100 0000 1110 0010 1010 0010‬ 0001 0000
+容量 -1      = 0000 0000 0000 0000 0000 0000 0000 1111
+------------------------------------------------------
+        结果 = 0000 0000 0000 0000 0000 0000 0000 0000
+# 得到位置是 0 
 
-`mask+1` 是大于原始数字的最小的 2 的 n 次方。
+~~~
 
-```text
-num     10010000
-mask+1 100000000
-```
+可以发现位置都是 0 ，冲突概率提高了。可见 `hash ^ (hash >>> 16)` 让数据的 hash 值的高 16 位与低 16 位进行与或混合，可以减少低位相同时数据插入冲突的概率。
 
-以下是 `HashMap` 中计算数组容量的代码：
+#### 5.HashMap的扩容方式
 
-```java
-static final int tableSizeFor(int cap) {
-    int n = cap - 1;
-    n |= n >>> 1;
-    n |= n >>> 2;
-    n |= n >>> 4;
-    n |= n >>> 8;
-    n |= n >>> 16;
-    return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
-}
-```
+负载因子是 **0.75**
 
-#### 8. 链表转红黑树
+~~~java
+  /**
+     * Initializes or doubles table size.  If null, allocates in
+     * accord with initial capacity target held in field threshold.
+     * Otherwise, because we are using power-of-two expansion, the
+     * elements from each bin must either stay at same index, or move
+     * with a power of two offset in the new table.
+     *
+     * @return the table
+     */
+    final Node<K,V>[] resize() {
+        Node<K,V>[] oldTab = table;
+        // 现有容量
+        int oldCap = (oldTab == null) ? 0 : oldTab.length;
+        // 现有扩容阀值
+        int oldThr = threshold;
+        int newCap, newThr = 0;
+        if (oldCap > 0) {
+            // 如果当前长度已经大于最大容量。结束扩容
+            if (oldCap >= MAXIMUM_CAPACITY) {
+                threshold = Integer.MAX_VALUE;
+                return oldTab;
+            }
+            // 如果扩大两倍之后小于最大容量，且现有容量大于等于初始容量，就扩大两倍
+            else if ((newCap = oldCap << 1) < MAXIMUM_CAPACITY && oldCap >= DEFAULT_INITIAL_CAPACITY)
+               // 扩容阀值扩大为两倍
+                newThr = oldThr << 1; // double threshold
+        }
+        // 当前容量 = 0 ，但是当前记录容量 > 0 ，获取当前记录容量。
+       else if (oldThr > 0) // initial capacity was placed in threshold
+            // 进入这里，说明是通过指定容量和负载因子的构造函数
+            newCap = oldThr;
+        else {    	           // zero initial threshold signifies using defaults
+            // 进入这里说明是通过无参构造
+            // 新的容量
+            newCap = DEFAULT_INITIAL_CAPACITY;
+            // 新的阀值
+            newThr = (int)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
+        }
+        if (newThr == 0) {
+            float ft = (float)newCap * loadFactor;
+            // 计算扩容阀值
+            newThr = (newCap < MAXIMUM_CAPACITY && ft < (float)MAXIMUM_CAPACITY ?
+                      (int)ft : Integer.MAX_VALUE);
+        }
+        threshold = newThr;
+        @SuppressWarnings({"rawtypes","unchecked"})
+            Node<K,V>[] newTab = (Node<K,V>[])new Node[newCap];
+        table = newTab;
+        // 如果 oldTab != null，说明是扩容，否则是初始化，直接返回
+        if (oldTab != null) {
+            for (int j = 0; j < oldCap; ++j) {
+                Node<K,V> e;
+                if ((e = oldTab[j]) != null) {
+                    oldTab[j] = null;
+                    // 如果当前元素 next节点没有元素，当前元素重新计算位置直接放入
+                    if (e.next == null)
+                        newTab[e.hash & (newCap - 1)] = e;
+                    else if (e instanceof TreeNode)
+                        // 如果当前节点是红黑树
+                        ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);
+                    else { // preserve order
+                        Node<K,V> loHead = null, loTail = null;
+                        Node<K,V> hiHead = null, hiTail = null;
+                        Node<K,V> next;
+                        do {
+                            next = e.next;
+                            // == 0 ，位置不变
+                            if ((e.hash & oldCap) == 0) {
+                                if (loTail == null)
+                                    loHead = e;
+                                else
+                                    loTail.next = e;
+                                loTail = e;
+                            }
+                            // e.hash & oldCap != 0 ,位置变为：位置+扩容前容量
+                            else {
+                                if (hiTail == null)
+                                    hiHead = e;
+                                else
+                                    hiTail.next = e;
+                                hiTail = e;
+                            }
+                        } while ((e = next) != null);
+                        if (loTail != null) {
+                            loTail.next = null;
+                            newTab[j] = loHead;
+                        }
+                        if (hiTail != null) {
+                            hiTail.next = null;
+                            newTab[j + oldCap] = hiHead;
+                        }
+                    }
+                }
+            }
+        }
+        return newTab;
+    }
+~~~
 
-从 JDK 1.8 开始，一个桶存储的链表长度大于等于 8 时会将链表转换为红黑树。
+扩容时候怎么重新确定元素在数组中的位置，我们看到是由 `if ((e.hash & oldCap) == 0)` 确定的。
 
-#### 9. 与 Hashtable 的比较
+~~~java
+hash HEX(97)  = 0110 0001‬
+n    HEX(16)  = 0001 0000
+--------------------------
+         结果  = 0000 0000
+# e.hash & oldCap = 0 计算得到位置还是扩容前位置
+    
+hash HEX(17)  = 0001 0001‬
+n    HEX(16)  = 0001 0000
+--------------------------
+         结果  = 0001 0000
+#  e.hash & oldCap != 0 计算得到位置是扩容前位置+扩容前容量
 
-- `Hashtable` 使用 `synchronized` 来进行同步。
-- `HashMap` 可以插入键为 `null` 的 `Entry`。
-- `HashMap` 的迭代器是 `fail-fast` 迭代器。
-- `HashMap` 不能保证随着时间的推移 `Map` 中的元素次序是不变的。
+~~~
+
+只有在每次容量都是 2 的次方的情况下才能使用 `if ((e.hash & oldCap) == 0)` 判断扩容后的位置
+
+#### 6. HashMap 中的红黑树
+
+HashMap 在 Java 8 中的实现增加了红黑树，当链表节点达到 8 个的时候，会把链表转换成红黑树，低于 6 个的时候，会退回链表。究其原因是因为当节点过多时，使用红黑树可以更高效的查找到节点。毕竟红黑树是一种二叉查找树。
+
+1. 节点个数是多少的时候，链表会转变成红黑树。
+
+   链表节点个数**大于等于 8 时**，链表会转换成树结构。
+
+2. 节点个数是多少的时候，红黑树会退回链表。
+
+   节点个数**小于等于 6 时**，树会转变成链表。
+
+3. 为什么转变条件 8 和 6 有一个差值。
+
+   如果没有差值，都是 8 ，那么如果频繁的插入删除元素，链表个数又刚好在 8 徘徊，那么就会频繁的发生链表转树，树转链表。
+
+#### 7. 为啥容量都是 2 的幂？
+
+容量是 2 的幂时，key 的 hash 值然后 `& (容量-1)` 确定位置时**碰撞概率会比较低**，因为容量为 2 的幂时，减 1 之后的二进制数为全 1，这样与运算的结果就等于 hasｈ值后面与 1 进行与运算的几位。
+
+~~~java
+hash HEX(97)  = 0110 0001‬
+n-1  HEX(15)  = 0000 1111
+--------------------------
+         结果  = 0000 0001
+# 计算得到位置是 1
+hash HEX(99)  = 0110 0011‬
+n-1  HEX(15)  = 0000 1111
+--------------------------
+         结果  = 0000 0011
+# 计算得到位置是 3
+hash HEX(101)  = 0110 0101‬
+n-1  HEX(15)   = 0000 1111
+--------------------------
+         结果   = 0000 0101
+# 计算得到位置是 5
+~~~
+
+如果是其他的容量值，假设是 9，进行与运算结果碰撞的概率就比较大。
+
+~~~java
+hash HEX(97)  = 0110 0001‬
+n-1  HEX(09)  = 0000 1001
+--------------------------
+         结果  = 0000 0001
+# 计算得到位置是 1
+hash HEX(99)  = 0110 0011‬
+n-1  HEX(09)  = 0000 1001
+--------------------------
+         结果  = 0000 0001
+# 计算得到位置是 1
+hash HEX(101)  = 0110 0101‬
+n-1  HEX(09)   = 0000 1001
+--------------------------
+         结果   = 0000 0001
+# 计算得到位置是 1
+~~~
+
+另外，每次都是 2 的幂也可以让 HashMap 扩容时可以方便的**重新计算位置**。
+
+~~~java
+hash HEX(97)  = 0110 0001‬
+n-1  HEX(15)  = 0000 1111
+--------------------------
+         结果  = 0000 0001
+# 计算得到位置是 1
+    
+hash HEX(97)  = 0110 0001‬
+n-1  HEX(31)  = 0001 1111
+--------------------------
+         结果  = 0000 0001
+# 计算得到位置是 1
+~~~
+
+#### 8. 快速失败（fail—fast）
+
+HashMap 遍历使用的是一种快速失败机制，它是 Java 非安全集合中的一种普遍机制，这种机制可以让集合在遍历时，如果有线程对集合进行了修改、删除、增加操作，会触发并发修改异常。
+
+它的实现机制是在遍历前保存一份 modCount ，在每次获取下一个要遍历的元素时会对比当前的 modCount 和保存的 modCount 是否相等。
+
+快速失败也可以看作是一种**安全机制**，这样在多线程操作不安全的集合时，由于快速失败的机制，会抛出异常。
+
+#### 9. 线程安全的 Map
+
+1. 使用 Collections.synchronizedMap (Map) 创建线程安全的 Map.
+
+   实现原理：有一个变量 `final Object mutex; `，操作方法都加了这个 `synchronized (mutex) `排它锁。
+
+2. 使用 Hashtable
+
+3. 使用 ConcurrentHashMap
 
 ### ConcurrentHashMap
 
 #### 1. 存储结构
 
-![image-20230412164817768](./img/image-20230412164817768.png)
+Java8 的 ConcurrentHashMap，不再是之前的 **Segment 数组 + HashEntry 数组 + 链表**，而是 **Node 数组 + 链表 / 红黑树**。当冲突链表达到一定长度时，链表会转换成红黑树。
 
-```java
-static final class HashEntry<K,V> {
-    final int hash;
-    final K key;
-    volatile V value;
-    volatile HashEntry<K,V> next;
-}
-```
+![image-20230426131036669](./img/image-20230426131036669.png)
 
-`ConcurrentHashMap` 和 `HashMap` 实现上类似，最主要的差别是 `ConcurrentHashMap` 采用了分段锁（Segment），每个分段锁维护着几个桶（HashEntry），多个线程可以同时访问不同分段锁上的桶，从而使其并发度更高（并发度就是 Segment 的个数）。
+#### 2. 初始化 initTable
 
-`Segment` 继承自 `ReentrantLock`。
-
-```java
-static final class Segment<K,V> extends ReentrantLock implements Serializable {
-
-    private static final long serialVersionUID = 2249069246763182397L;
-
-    static final int MAX_SCAN_RETRIES =
-        Runtime.getRuntime().availableProcessors() > 1 ? 64 : 1;
-
-    transient volatile HashEntry<K,V>[] table;
-
-    transient int count;
-
-    transient int modCount;
-
-    transient int threshold;
-
-    final float loadFactor;
-}
-final Segment<K,V>[] segments;
-```
-
-默认的并发级别为 16，也就是说默认创建 16 个 `Segment`。
-
-```java
-static final int DEFAULT_CONCURRENCY_LEVEL = 16;
-```
-
-#### 2. size 操作
-
-每个 `Segment` 维护了一个 `count` 变量来统计该 `Segment` 中的键值对个数。
-
-```java
+~~~java
 /**
- * The number of elements. Accessed only either within locks
- * or among other volatile reads that maintain visibility.
+ * Initializes table, using the size recorded in sizeCtl.
  */
-transient int count;
-```
-
-在执行 `size` 操作时，需要遍历所有 `Segment` 然后把 `count` 累计起来。
-
-`ConcurrentHashMap` 在执行 `size` 操作时先尝试不加锁，如果连续两次不加锁操作得到的结果一致，那么可以认为这个结果是正确的。
-
-尝试次数使用 `RETRIES_BEFORE_LOCK` 定义，该值为 2，`retries` 初始值为 -1，因此尝试次数为 3。
-
-如果尝试的次数超过 3 次，就需要对每个 `Segment` 加锁。
-
-```java
-/**
- * Number of unsynchronized retries in size and containsValue
- * methods before resorting to locking. This is used to avoid
- * unbounded retries if tables undergo continuous modification
- * which would make it impossible to obtain an accurate result.
- */
-static final int RETRIES_BEFORE_LOCK = 2;
-
-public int size() {
-    // Try a few times to get accurate count. On failure due to
-    // continuous async changes in table, resort to locking.
-    final Segment<K,V>[] segments = this.segments;
-    int size;
-    boolean overflow; // true if size overflows 32 bits
-    long sum;         // sum of modCounts
-    long last = 0L;   // previous sum
-    int retries = -1; // first iteration isn't retry
-    try {
-        for (;;) {
-            // 超过尝试次数，则对每个 Segment 加锁
-            if (retries++ == RETRIES_BEFORE_LOCK) {
-                for (int j = 0; j < segments.length; ++j)
-                    ensureSegment(j).lock(); // force creation
-            }
-            sum = 0L;
-            size = 0;
-            overflow = false;
-            for (int j = 0; j < segments.length; ++j) {
-                Segment<K,V> seg = segmentAt(segments, j);
-                if (seg != null) {
-                    sum += seg.modCount;
-                    int c = seg.count;
-                    if (c < 0 || (size += c) < 0)
-                        overflow = true;
+private final Node<K,V>[] initTable() {
+    Node<K,V>[] tab; int sc;
+    while ((tab = table) == null || tab.length == 0) {
+        ／／　如果 sizeCtl < 0 ,说明另外的线程执行CAS 成功，正在进行初始化。
+        if ((sc = sizeCtl) < 0)
+            // 让出 CPU 使用权
+            Thread.yield(); // lost initialization race; just spin
+        else if (U.compareAndSwapInt(this, SIZECTL, sc, -1)) {
+            try {
+                if ((tab = table) == null || tab.length == 0) {
+                    int n = (sc > 0) ? sc : DEFAULT_CAPACITY;
+                    @SuppressWarnings("unchecked")
+                    Node<K,V>[] nt = (Node<K,V>[])new Node<?,?>[n];
+                    table = tab = nt;
+                    sc = n - (n >>> 2);
                 }
+            } finally {
+                sizeCtl = sc;
             }
-            // 连续两次得到的结果一致，则认为这个结果是正确的
-            if (sum == last)
-                break;
-            last = sum;
-        }
-    } finally {
-        if (retries > RETRIES_BEFORE_LOCK) {
-            for (int j = 0; j < segments.length; ++j)
-                segmentAt(segments, j).unlock();
+            break;
         }
     }
-    return overflow ? Integer.MAX_VALUE : size;
+    return tab;
 }
-```
+~~~
 
-#### 3. JDK 1.8 的改动
+从源码中可以发现 ConcurrentHashMap 的初始化是通过**自旋和 CAS** 操作完成的。里面需要注意的是变量 `sizeCtl` ，它的值决定着当前的初始化状态。
 
-JDK 1.7 使用分段锁机制来实现并发更新操作，核心类为 `Segment`，它继承自重入锁 `ReentrantLock`，并发度与 `Segment` 数量相等。
+1. -1 说明正在初始化
+2. -N 说明有 N-1 个线程正在进行扩容
+3. 表示 table 初始化大小，如果 table 没有初始化
+4. 表示 table 容量，如果 table　已经初始化。
 
-JDK 1.8 使用了 `CAS` 操作来支持更高的并发度，在 `CAS` 操作失败时使用内置锁 `synchronized`。
+#### 3. put
 
-并且 JDK 1.8 的实现也在链表过长时会转换为红黑树。
+~~~java
+public V put(K key, V value) {
+    return putVal(key, value, false);
+}
+
+/** Implementation for put and putIfAbsent */
+final V putVal(K key, V value, boolean onlyIfAbsent) {
+    // key 和 value 不能为空
+    if (key == null || value == null) throw new NullPointerException();
+    int hash = spread(key.hashCode());
+    int binCount = 0;
+    for (Node<K,V>[] tab = table;;) {
+        // f = 目标位置元素
+        Node<K,V> f; int n, i, fh;// fh 后面存放目标位置的元素 hash 值
+        if (tab == null || (n = tab.length) == 0)
+            // 数组桶为空，初始化数组桶（自旋+CAS)
+            tab = initTable();
+        else if ((f = tabAt(tab, i = (n - 1) & hash)) == null) {
+            // 桶内为空，CAS 放入，不加锁，成功了就直接 break 跳出
+            if (casTabAt(tab, i, null,new Node<K,V>(hash, key, value, null)))
+                break;  // no lock when adding to empty bin
+        }
+        else if ((fh = f.hash) == MOVED)
+            tab = helpTransfer(tab, f);
+        else {
+            V oldVal = null;
+            // 使用 synchronized 加锁加入节点
+            synchronized (f) {
+                if (tabAt(tab, i) == f) {
+                    // 说明是链表
+                    if (fh >= 0) {
+                        binCount = 1;
+                        // 循环加入新的或者覆盖节点
+                        for (Node<K,V> e = f;; ++binCount) {
+                            K ek;
+                            if (e.hash == hash &&
+                                ((ek = e.key) == key ||
+                                 (ek != null && key.equals(ek)))) {
+                                oldVal = e.val;
+                                if (!onlyIfAbsent)
+                                    e.val = value;
+                                break;
+                            }
+                            Node<K,V> pred = e;
+                            if ((e = e.next) == null) {
+                                pred.next = new Node<K,V>(hash, key,
+                                                          value, null);
+                                break;
+                            }
+                        }
+                    }
+                    else if (f instanceof TreeBin) {
+                        // 红黑树
+                        Node<K,V> p;
+                        binCount = 2;
+                        if ((p = ((TreeBin<K,V>)f).putTreeVal(hash, key,
+                                                       value)) != null) {
+                            oldVal = p.val;
+                            if (!onlyIfAbsent)
+                                p.val = value;
+                        }
+                    }
+                }
+            }
+            if (binCount != 0) {
+                if (binCount >= TREEIFY_THRESHOLD)
+                    treeifyBin(tab, i);
+                if (oldVal != null)
+                    return oldVal;
+                break;
+            }
+        }
+    }
+    addCount(1L, binCount);
+    return null;
+}
+~~~
+
+1. 根据 key 计算出 hashcode 。
+2. 判断是否需要进行初始化。
+3. 即为当前 key 定位出的 Node，如果为空表示当前位置可以写入数据，利用 CAS 尝试写入，失败则自旋保证成功。
+4. 如果当前位置的 `hashcode == MOVED == -1`, 则需要进行扩容。
+5. 如果都不满足，则利用 synchronized 锁写入数据。
+6. 如果数量大于 `TREEIFY_THRESHOLD` 则要转换为红黑树。
+
+#### 4. get
+
+~~~java
+public V get(Object key) {
+    Node<K,V>[] tab; Node<K,V> e, p; int n, eh; K ek;
+    // key 所在的 hash 位置
+    int h = spread(key.hashCode());
+    if ((tab = table) != null && (n = tab.length) > 0 &&
+        (e = tabAt(tab, (n - 1) & h)) != null) {
+        // 如果指定位置元素存在，头结点hash值相同
+        if ((eh = e.hash) == h) {
+            if ((ek = e.key) == key || (ek != null && key.equals(ek)))
+                // key hash 值相等，key值相同，直接返回元素 value
+                return e.val;
+        }
+        else if (eh < 0)
+            // 头结点hash值小于0，说明正在扩容或者是红黑树，find查找
+            return (p = e.find(h, key)) != null ? p.val : null;
+        while ((e = e.next) != null) {
+            // 是链表，遍历查找
+            if (e.hash == h &&
+                ((ek = e.key) == key || (ek != null && key.equals(ek))))
+                return e.val;
+        }
+    }
+    return null;
+}
+~~~
+
+1. 根据 hash 值计算位置。
+2. 查找到指定位置，如果头节点就是要找的，直接返回它的 value.
+3. 如果头节点 hash 值小于 0 ，说明正在扩容或者是红黑树，查找之。
+4. 如果是链表，遍历查找之。
+
+#### 5.总结
+
+Java7 中 ConcruuentHashMap 使用的分段锁，也就是每一个 Segment 上同时只有一个线程可以操作，每一个 Segment 都是一个类似 HashMap 数组的结构，它可以扩容，它的冲突会转化为链表。但是 Segment 的个数一旦初始化就不能改变。
+
+Java8 中的 ConcruuentHashMap 使用的 Synchronized 锁加 CAS 的机制。结构也由 Java7 中的 **Segment 数组 + HashEntry 数组 + 链表** 进化成了 **Node 数组 + 链表 / 红黑树**，Node 是类似于一个 HashEntry 的结构。它的冲突再达到一定大小时会转化成红黑树，在冲突小于一定数量时又退回链表。
+
+Synchronized 锁自从引入锁升级策略后，性能不再是问题
 
 ### LinkedHashMap
 

@@ -1470,6 +1470,44 @@ public static void main(String[] args) {
 
 ## 九、其它
 
+### toString()、String.valueOf、String 强转，有啥区别
+
+- 对于基本类型：
+
+  - 基本类型没有 toString() 方法
+
+  - 基本类型无法强转 String 会报错
+
+  - String.valueOf 可以
+
+- 对于包装类
+
+  - 包装类也无法强转
+  - 包装类有 toString() 方法
+  - String.valueOf() 可以
+
+- 将Object类型转为String类型，使用(String)强转时，最好使用instanceof做一个类型检查，以判断是否可以进行强转，否则容易抛出ClassCastException异常
+
+~~~java
+Object a = 0;
+if (a instanceof string) {
+    String b = (String)a;
+}
+~~~
+
+- null 值问题
+  - toString()报空指针异常
+  - String.valueOf()返回字符串“null”
+  - null值可以强转
+
+**总结**
+
+1、toString()，可能会抛空指针异常
+
+2、String.valueOf()，推荐使用，返回字符串“null”
+
+3、String强转，不推荐使用
+
 ### Java语言特点
 
 1）简单易学。Java有丰富的类库，能够通过静态方法封装，降低`API`的学习成本，提高工作效率。 

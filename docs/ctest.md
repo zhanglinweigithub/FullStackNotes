@@ -50,6 +50,7 @@ title:
 - [Vue3](./guide/Vue3/Vue3.md)
 - [JavaScript](./guide/JavaScript/JavaScript.md)
 - [TypeScript](./guide/TypeScript/TypeScript.md)
+- [Nginx](./guide/Nginx/Nginx.md)
 
 ## ✏️算法
 - [基础](./guide/Algorithm/AlgorithmBase.md)
