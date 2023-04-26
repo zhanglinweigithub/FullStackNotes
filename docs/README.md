@@ -6,7 +6,7 @@
 
 <a href = 'http://linwei-zhang.gitee.io/full-stack-notes/' target="_blank">
 
-<img src="https://gitee.com/linwei-zhang/full-stack-notes/raw/master/image-20230410152203086.png"/></a>
+<img src="https://raw.githubusercontent.com/zhanglinweigithub/FullStackNotes/master/image-20230410152203086.png"/></a>
 
 ## 📌小程序
 
@@ -60,6 +60,7 @@
 - [Vue3](http://linwei-zhang.gitee.io/full-stack-notes/guide/Vue3/Vue3.html)
 - [JavaScript](http://linwei-zhang.gitee.io/full-stack-notes/guide/JavaScript/JavaScript.html)
 - [TypeScript](http://linwei-zhang.gitee.io/full-stack-notes/guide/TypeScript/TypeScript.html)
+- [Nginx](http://linwei-zhang.gitee.io/full-stack-notes/guide/Nginx/Nginx.html)
 
 ## ✏️算法
 
