@@ -1,0 +1,1 @@
+const e=JSON.parse('{"key":"v-e13b66c6","path":"/guide/MarkDown/MarkDownIcon.html","title":"EMOJI","lang":"zh-CN","frontmatter":{"title":"EMOJI"},"headers":[],"git":{"updatedTime":1681352812000,"contributors":[{"name":"zhanglinwei","email":"3498729975@qq.com","commits":1}]},"filePathRelative":"guide/MarkDown/MarkDownIcon.md"}');export{e as data};
