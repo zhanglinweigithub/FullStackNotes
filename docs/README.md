@@ -6,7 +6,7 @@
 
 <a href = 'http://linwei-zhang.gitee.io/full-stack-notes/' target="_blank">
 
-<img src="https://raw.githubusercontent.com/zhanglinweigithub/FullStackNotes/master/image-20230410152203086.png"/></a>
+<img src="https://gitee.com/linwei-zhang/full-stack-notes/raw/master/image-20230410152203086.png"/></a>
 
 ## 📌小程序
 
