@@ -24,7 +24,16 @@ export default {
   theme: defaultTheme({
     navbar: navbars,    // 在这里进行配置
     sidebarOpen: false, // sidebar: sidebars,
-    logo: "/images/quantou.png"
+    logo: "/images/quantou.png",
+    repo: 'https://gitee.com/linwei-zhang/full-stack-notes',
+    repoLabel: 'Gitee',
+    editLink: false,
+    lastUpdatedText: '上次更新',
+    contributorsText: '贡献者',
+    tip: '提示',
+    warning: '注意',
+    danger: '警告',
+    backToHome: '返回首页'
   }),
   plugins: [
     // 搜索框
@@ -33,4 +42,5 @@ export default {
       maxSuggestions: 10,   // 展示10条搜索内容
     })
   ],
+  
 };

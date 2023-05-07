@@ -4,7 +4,301 @@ sidebar: 'auto'
 ---
 # Redis
 
-## 一、概述
+## 一、安装Redis
+
+### Docker安装Redis
+
+#### 1、安装Docker
+
+[Linux安装Docker](http://linwei-zhang.gitee.io/full-stack-notes/guide/Docker/Docker.html#centos7%E5%AE%89%E8%A3%85docker)
+
+#### 2、拉取 Redis 镜像
+
+~~~docker
+# docker pull <镜像名称>:<版本号>
+docker pull redis
+~~~
+
+#### 3、挂载配置文件
+
+本人的配置文件是放在
+
+liunx 下`redis.conf`文件位置： `/home/redis/myredis/redis.conf`
+
+liunx 下`redis`的`data`文件位置 ： `/home/redis/myredis/data`
+
+1）挂载 redis 的配置文件
+
+~~~bash
+# 不存在则创建
+mkdir -p /home/redis/myredis
+cd /home/redis/myredis
+mkdir -p data
+~~~
+
+2）挂载 redis 的持久化文件（为了数据的持久化）。
+
+#### 4、启动 Redis
+
+`myredis.conf` 文件需自己上传，在本文后面会有，也可上官网查找标准配置文件
+
+~~~docker
+docker run 
+	--restart=always 
+	--log-opt max-size=100m 
+	--log-opt max-file=2 
+	-p 6379:6379 
+	--name myredis 
+	-v /home/redis/myredis/myredis.conf:/etc/redis/redis.conf 
+	-v /home/redis/myredis/data:/data 
+	-d redis 
+	redis-server /etc/redis/redis.conf  
+	--appendonly yes  
+	--requirepass 000415
+~~~
+
+- `--restart=always` 总是开机启动
+- `--log`是日志方面的
+- `-p 6379:6379` 将6379端口挂载出去
+- `--name` 给这个容器取一个名字
+- `-v` 数据卷挂载
+  - `/home/redis/myredis/myredis.conf:/etc/redis/redis.conf` 这里是将 liunx 路径下的`myredis.conf` 和redis下的`redis.conf` 挂载在一起。
+  - `/home/redis/myredis/data:/data` 这个同上
+- `-d redis` 表示后台启动redis
+- `redis-server /etc/redis/redis.conf` 以配置文件启动redis，加载容器内的conf文件，最终找到的是挂载的目录 `/etc/redis/redis.conf` 也就是liunx下的`/home/redis/myredis/myredis.conf`
+- `–appendonly yes` 开启redis 持久化
+- `–requirepass 000415` 设置密码 （如果你是通过docker 容器内部连接的话，就随意，可设可不设。）
+
+##### 查看 redis 是否启动成功
+
+~~~docker
+docker ps # 查看启动中的容器
+~~~
+
+##### 查看日志
+
+~~~docker
+# 命令：docker logs --since 30m <容器名>
+# --since 30m 是查看此容器30分钟之内的日志情况
+docker logs --since 30m myredis
+~~~
+
+#### 5、容器内部连接进行测试
+
+##### 进入容器
+
+~~~docker
+# 命令：docker exec -it <容器名> /bin/bash
+docker exec -it myredis redis-cli
+~~~
+
+进入之后，直接输入查看命令
+
+![image-20230507124334526](./img/image-20230507124334526.png)
+
+error是没有权限验证
+
+##### 验证密码
+
+就是启动 redis 时设置的密码
+
+~~~bash
+auth 000415
+~~~
+
+![image-20230507124445609](./img/image-20230507124445609.png)
+
+##### 查看当前redis有没有设置密码
+
+~~~bash
+config get requirepass
+~~~
+
+![image-20230507124536605](./img/image-20230507124536605.png)
+
+#### 6、配置文件
+
+myredis.conf
+
+~~~
+# bind 192.168.1.100 10.0.0.1
+# bind 127.0.0.1 ::1
+#bind 127.0.0.1
+
+protected-mode no
+port 6379
+tcp-backlog 511
+requirepass 000415
+timeout 0
+tcp-keepalive 300
+daemonize no
+supervised no
+pidfile /var/run/redis_6379.pid
+loglevel notice
+logfile ""
+databases 30
+always-show-logo yes
+save 900 1
+save 300 10
+save 60 10000
+stop-writes-on-bgsave-error yes
+rdbcompression yes
+rdbchecksum yes
+dbfilename dump.rdb
+dir ./
+replica-serve-stale-data yes
+replica-read-only yes
+repl-diskless-sync no
+repl-disable-tcp-nodelay no
+replica-priority 100
+lazyfree-lazy-eviction no
+lazyfree-lazy-expire no
+lazyfree-lazy-server-del no
+replica-lazy-flush no
+appendonly yes
+appendfilename "appendonly.aof"
+no-appendfsync-on-rewrite no
+auto-aof-rewrite-percentage 100
+auto-aof-rewrite-min-size 64mb
+aof-load-truncated yes
+aof-use-rdb-preamble yes
+lua-time-limit 5000
+slowlog-max-len 128
+notify-keyspace-events ""
+hash-max-ziplist-entries 512
+hash-max-ziplist-value 64
+list-max-ziplist-size -2
+list-compress-depth 0
+set-max-intset-entries 512
+zset-max-ziplist-entries 128
+zset-max-ziplist-value 64
+hll-sparse-max-bytes 3000
+stream-node-max-bytes 4096
+stream-node-max-entries 100
+activerehashing yes
+hz 10
+dynamic-hz yes
+aof-rewrite-incremental-fsync yes
+rdb-save-incremental-fsync yes
+~~~
+
+
+
+### window安装Redis
+
+#### 1、下载地址
+
+- Github下载地址：https://github.com/MicrosoftArchive/redis/releases
+- 百度网盘下载地址：https://pan.baidu.com/s/1PDYbR7PSdHNac2djSPuTRQ 提取码：tilq
+
+#### 2、安装
+
+将下载好的 Redis 解压到单独目录
+
+::: tip
+
+安装路径最好不要出现中文和空格
+
+:::
+
+![image-20230507115637834](./img/image-20230507115637834.png)
+
+#### 3、启动Redis
+
+##### 第一种启动方式
+
+打开 CMD 进入 Redis 文件目录，运行如下命令，即可启动 Redis
+
+~~~bash
+redis-server redis.windows.conf
+~~~
+
+![image-20230507115849505](./img/image-20230507115849505.png)
+
+##### 第二种启动方式
+
+部署 Redis 在 windows 下的服务
+
+（1）关闭上一个 CMD 窗口，打开一个新的 CMD 窗口，输入如下命令
+
+~~~bash
+redis-server --service-install redis.windows.conf
+~~~
+
+![image-20230507120121983](./img/image-20230507120121983.png)
+
+（2）启动Redis服务，进入服务里，找到Redis服务进行启动
+
+![image-20230507120200417](./img/image-20230507120200417.png)
+
+::: tip 服务
+
+右击我的电脑 ==> 管理 ==> 服务和应用程序 ==> 服务
+
+:::
+
+（3）测试
+
+打开cmd，输入以下命令
+
+~~~bash
+redis-cli.exe
+set name hello
+get name
+keys *
+~~~
+
+![image-20230507120709823](./img/image-20230507120709823.png)
+
+#### 4、Redis使用 
+
+卸载服务
+
+~~~bash
+redis-server --service-uninstall 
+~~~
+
+开启服务
+
+~~~bash
+redis-server --service-start 
+~~~
+
+停止服务
+
+~~~bash
+redis-server --service-stop
+~~~
+
+#### 5、开启远程访问
+
+由于Redis默认只允许本地访问，要使Redis可以远程访问，需修改redis对应的配置文件
+
+我使用的Redis版本为：`redis 3.2` ，默认使用的是`redis.windows.conf`
+
+::: tip 查看 Redis 版本信息
+
+先启动 Redis 服务，再使用`redis-cli.exe`启动客户端，然后在客户端中输入 `info` 命令即可查看
+
+:::
+
+（1）确认redis服务运行的配置文件，查找redis服务
+
+![image-20230507121021117](./img/image-20230507121021117.png)
+
+（2）修改两个地方即可：
+
+1）注释掉本地连接对应的 bind 127.0.0.1
+
+![image-20230507121145417](./img/image-20230507121145417.png)
+
+2）将redis默认的守护关闭，修改protected-mode yes 为 protected-mode no
+
+![image-20230507121203016](./img/image-20230507121203016.png)
+
+3）修改完成，保存重启 Redis 服务
+
+## 二、概述
 
 Redis的官方网站地址：[https://redis.io/](https://redis.io/)
 
@@ -44,7 +338,7 @@ spring:
         max-wait: 100ms #连接等待时间
 ~~~
 
-## 二、Redis常见命令&数据类型
+## 三、Redis常见命令&数据类型
 
 ### Redis数据结构
 
@@ -520,7 +814,7 @@ OK
 
 
 
-## 三、Redis的Java客户端
+## 四、Redis的Java客户端
 
 在Redis官网中提供了各种语言的客户端，地址：https://redis.io/docs/clients/
 
@@ -762,7 +1056,7 @@ class RedisStringTests {
 }
 ```
 
-## 四、Redis持久化机制
+## 五、Redis持久化机制
 
 ### RDB持久化
 
@@ -947,7 +1241,7 @@ auto-aof-rewrite-min-size 64mb
 
 ![image-20210725151940515](./img/image-20210725151940515.png)
 
-## 五、Redis实战
+## 六、Redis实战
 
 ### 短信登录
 
@@ -1275,7 +1569,7 @@ public Result login(LoginFormDTO loginForm, HttpSession session) {
 
 ![1653357522914](./img/1653357522914.png)
 
-## 六、Redis主从
+## 七、Redis主从
 
 ### 搭建主从架构
 
@@ -1641,7 +1935,7 @@ info replication
 
 
 
-## 七、Redis工具类
+## 八、Redis工具类
 
 ```java
 //Redis操作
