@@ -214,6 +214,15 @@ const navbars = [
           }
         ]
       },
+      {
+        text: "实用网站",
+        children: [
+          {
+            text: "实用网站汇总",
+            link: "/guide/WebSite/WebSite.md",
+          }
+        ]
+      },
     ],
   },
   // {

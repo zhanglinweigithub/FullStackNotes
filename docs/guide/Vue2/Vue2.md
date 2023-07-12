@@ -361,14 +361,16 @@ export default options;
     </div>
 </template>
 <script>
-const options = {
-    data: function () {
-        return { name: '', age: null, sex:'男' , fav:['打球']};
-    },
-    methods: {
+export default {
+	data() {
+        return {
+            name: '', 
+            age: null, 
+            sex:'男' , 
+            fav:['打球']
+        }
     }
-};
-export default options;
+}
 </script>
 ```
 
@@ -547,29 +549,61 @@ vue 提供了事件修饰符的概念，来辅助程序员更方便的对事件�
     </div>
 </template>
 <script>
-const options = {
-    data: function () {
-        return { firstName: '三', lastName: '张' };
-    },
-    /* methods: {
-        fullName() {
-            console.log('进入了 fullName')
-            return this.lastName + this.firstName;
+export default {
+    data() {
+        return {
+            firstName: '三', lastName: '张'
         }
-    },*/
+    },
     computed: {
         fullName() {
             console.log('进入了 fullName')
             return this.lastName + this.firstName;
         }
     }
-};
-export default options;
+}
+</script>
 ```
 
-- 普通方法调用必须加 ()，没有缓存功能
+- 普通方法调用必须加 `()`，没有缓存功能
 - 计算属性使用时就把它当属性来用，不加 ()，有缓存功能：
   - 一次计算后，会将结果缓存，下次再计算时，只要数据没有变化，不会重新计算，直接返回缓存结果
+
+**重点来了！！！**
+
+如果`v-model`绑定的这个计算属性`fullName`在表单上被修改了，那么`set`的`value`参数就是被修改的值，就可以写个`set`方法拿到这个值去用 
+
+~~~vue
+<!-- 简写形式 -->
+<script>
+export default {
+  computed:{
+    fullName(){
+      return this.firstName+ '-' + this.lastName
+    }
+  }
+}
+</script>
+<!-- 非简写形式 -->
+<script>
+export default {
+  computed:{
+    fullName:{
+      get() {
+        return this.firstName + '-' + this.lastName
+      },
+      set(value){
+	    const arr = value.split('-')
+	    this.firstName = arr[0]
+	    this.lastName = arr[1]
+       }
+     }
+  }
+}
+</script>
+~~~
+
+
 
 ### watch 监听器
 
