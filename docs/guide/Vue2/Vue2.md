@@ -178,7 +178,7 @@ nvm list
 ```bash
 npm get registry
 # 如果返回的不是 https://registry.npm.taobao.org/,需要做如下设置
-npm config ser registry https://registry.npm.taobao.org/
+npm config set registry https://registry.npm.taobao.org/
 ```
 
 11.nvm自动配置环境变量，node不会，所以要配置node环境变量
@@ -259,12 +259,14 @@ module.exports = defineConfig({
     </div>
 </template>
 <script>
-const options = {
-    data: function () {
-        return { name: '张三', age: 70 };
+export default {
+    data () {
+        return { 
+          name: '张三',
+          age: 70 
+        };
     }
 };
-export default options;
 </script>
 ```
 
@@ -284,12 +286,15 @@ export default options;
     </div>
 </template>
 <script>
-const options = {
-    data: function () {
-        return { name: '王五', birthday: '1995-05-01', age: 20 };
+export default {
+  data () {
+    return {
+      name: '王五',
+      birthday: '1995-05-01',
+      age: 20 
     }
-};
-export default options;
+  }
+}
 </script>
 ```
 
@@ -308,26 +313,27 @@ export default options;
     </div>
 </template>
 <script>
-const options = {
-    data: function () {
-        return { count: 0 };
-    },
-    methods: {
-      // 监听粘贴事件
-      paste(){
-        console.log("粘贴事件触发了")
-      },
-        m1() {
-            this.count ++;
-            console.log("m1")
-        },
-        m2() {
-            this.count --;
-            console.log("m2")
-        }
+export default {
+  data () {
+    return {
+      count: 0
     }
-};
-export default options;
+  },
+  methods: {
+    // 监听粘贴事件
+    paste(){
+     console.log("粘贴事件触发了")
+    },
+    m1() {
+     this.count ++;
+     console.log("m1")
+    },
+    m2() {
+     this.count --;
+     console.log("m2")
+    }
+  }
+}
 </script>
 ```
 
@@ -396,16 +402,26 @@ v-for 指令需要使 用 item in items 形式的特殊语法，其中： items 
 需要为每项提供一个唯一的 key 属性
 
 ```vue
-data:{
-	list: [//列表数据
-		{id:1, name:'wang'},
-		{id:2, name:'li'}
-	]
+<template>
+  <div>
+    <ul>
+      <li v-for="item in list" :key="item.id">姓名是：{{ item.name }}</li>
+    </ul>
+  </div>
+</template>
+
+<script>
+export default {
+  data () {
+    return {
+      list: [//列表数据
+	  	  {id:1, name:'wang'},
+	  	  {id:2, name:'li'}
+	    ]
+    }
+  }
 }
-<!-- 分割线 -->
-<ul>
-    <li v-for="item in list" :key="item.id">姓名是：{{ item.name }}</li>
-</ul>
+</script>
 ```
 
 key 的注意事项:
@@ -479,23 +495,33 @@ v-text 指令和插值表达式只能渲染纯文本内容。
 当绑定事件方法后，不传任何参数，默认会传递 event 事件对象
 
 ```vue
-<aty-textarea v-model="value" @keyup.enter="enter">
-</aty-textarea>
+<template>
+  <div>
+    <aty-textarea v-model="value" @keyup.enter="enter">
+    </aty-textarea>
+  </div>
+</template>
 
-// 实现输入框内，按下回车自动缩进两字符（4个空格）
-enter (event) {
-  if (!this.isAutoEnterIndent) {
-      return
-  }
-  // 获取光标当前位置（输入框内）
-  const cursorPosition = event.target.selectionEnd
-  // 截取光标前内容
-  const prefix = this.value.substring(0, cursorPosition)
-  // 截取光标后内容
-  const suffix = this.value.substring(cursorPosition, this.value.length)
-  // 拼接 4个空格 
-  this.value = prefix + '   ' + suffix
+<script>
+export default {
+  methods: {
+    // 实现输入框内，按下回车自动缩进两字符（4个空格）
+    enter (event) {
+      if (!this.isAutoEnterIndent) {
+        return
+      }
+      // 获取光标当前位置（输入框内）
+      const cursorPosition = event.target.selectionEnd
+      // 截取光标前内容
+      const prefix = this.value.substring(0, cursorPosition)
+      // 截取光标后内容
+      const suffix = this.value.substring(cursorPosition, this.value.length)
+      // 拼接 4个空格 
+      this.value = prefix + '   ' + suffix
+    }
+  } 
 }
+</script>
 ```
 
 vue 提供了事件修饰符的概念，来辅助程序员更方便的对事件的触发进行控制，常用的 5 个事件修饰符如下：
@@ -610,9 +636,15 @@ export default {
 watch 侦听器允许开发者监视数据的变化，从而针对数据的变化做特定的操作
 
 ```vue
-<button @click="changeUsername">a</button>
+<template>
+  <div>
+    <button @click="changeUsername">a</button>
+  </div>
+</template>
 
-data(){
+<script>
+export default {
+  data(){
     return {
       username:'wo'
     }
@@ -628,6 +660,8 @@ data(){
       console.log(newVal,oldVal)//输出aaaaaaaaaaaaa,wo
     }
   }
+}
+</script>
 ```
 
 #### 加载完立即调用 immediate
@@ -635,18 +669,22 @@ data(){
 默认情况下，组件在初次加载完毕后不会调用 watch 侦听器。如果想让 watch 侦听器立即被调用，则需要使 用 immediate 选项。
 
 ```vue
-watch: {
-	username: {
-		// handler 是固定写法，表示当 username 的值变化时，自动调用 handler 处理函数
-		handler(newVal) {
-			if (newVal === '') return
-			this.username = newVal
-			console.log(newVal)
-		},
-		// 表示页面初次渲染好之后，就立即触发当前的 watch 侦听器
-		immediate: true
-	}
+<script>
+export default {
+  watch: {
+	  username: {
+		  // handler 是固定写法，表示当 username 的值变化时，自动调用 handler 处理函数
+		  handler(newVal) {
+			  if (newVal === '') return
+			  this.username = newVal
+			  console.log(newVal)
+		  },
+		  // 表示页面初次渲染好之后，就立即触发当前的 watch 侦听器
+		  immediate: true
+	  }
+  }
 }
+</script>
 ```
 
 #### 监听对象属性 deep属性
@@ -654,18 +692,21 @@ watch: {
 如果 watch 侦听的是一个对象，如果对象中的属性值发生了变化，则无法被监听到。此时需要使用 deep 选 项
 
 ```vue
-watch: {
-	username: {
-		// handler 是固定写法，表示当 username 的值变化时，自动调用 handler 处理函数
-		handler(newVal) {
-			if (newVal === '') return
-			this.username = newVal
-			console.log(newVal)
-		},
-		deep: true
-        
-	}
+<script>
+export default {
+  watch: {
+	  username: {
+		  // handler 是固定写法，表示当 username 的值变化时，自动调用 handler 处理函数
+		  handler(newVal) {
+			  if (newVal === '') return
+			  this.username = newVal
+			  console.log(newVal)
+		  },
+		  deep: true  
+	  }
+  }
 }
+</script>
 ```
 
 #### 监听对象中单个属性的变化
@@ -673,25 +714,29 @@ watch: {
 如果只想监听对象中单个属性的变化，则可以按照如下的方式定义 watch 侦听器：
 
 ```vue
-data(){
-	return {
-		info:{
-            username:'admin'
-        }
-	}
-},
-methods:{
-	changeUsername(){
-		this.username = 'aaaaaaaaaaaaa'
-	}
-},
-watch:{
-	'info.username':{
-        handler(newVal){
-            console.log(newVal)
-        }
-	}
+<script>
+export default {
+  data(){
+	  return {
+		  info:{
+        username:'admin'
+      }
+	  }
+  },
+  methods:{
+	  changeUsername(){
+		  this.username = 'aaaaaaaaaaaaa'
+	  }
+  },
+  watch:{
+	  'info.username':{
+      handler(newVal){
+        console.log(newVal)
+      }
+	  }
+  }
 }
+</script>
 ```
 
 ## 四、ref和slot
@@ -707,18 +752,26 @@ watch:{
 如果想要使用 `ref` 引用页面上的 `DOM` 元素，则可以按照如下的方式进行操作：
 
 ```vue
-//使用 ref 属性，为对应的 DOM 添加引用名称
-<h3 ref="myh3">MyRef组件</h3>
-<button @click="getRef">获取 $refs 引用</button>
+<template>
+  <div>
+    //使用 ref 属性，为对应的 DOM 添加引用名称
+    <h3 ref="myh3">MyRef组件</h3>
+    <button @click="getRef">获取 $refs 引用</button>
+  </div>
+</template>
 
-methods:{
+<script>
+export default {
+  methods:{
     getRef(){
-        //通过 this.$ref.引用的名称 可以获取到DOM元素的引用
-        console.log(this.$ref.myh3)
-        //操作 DOM 元素，把文本颜色改为红色
-        this.$ref.myh3.style.color='red'
+      //通过 this.$ref.引用的名称 可以获取到DOM元素的引用
+      console.log(this.$ref.myh3)
+      //操作 DOM 元素，把文本颜色改为红色
+      this.$ref.myh3.style.color='red'
     }
+  }
 }
+</script>
 ```
 
 #### ref引用组件
@@ -726,18 +779,26 @@ methods:{
 如果想要使用 `ref` 引用页面上的组件实例（VC），则可以按照如下的方式进行操作
 
 ```vue
-//使用 ref 属性，为对应的 "组件" 添加引用名称
-<my-counter ref="counterRef"></my-counter>
-<button @click="getRef">获取 $refs 引用</button>
+<template>
+  <div>
+    //使用 ref 属性，为对应的 "组件" 添加引用名称
+    <my-counter ref="counterRef"></my-counter>
+    <button @click="getRef">获取 $refs 引用</button>
+  </div>
+</template>
 
-methods:{
+<script>
+export default {
+  methods:{
     getRef(){
-        <!-- 通过 this.$ref.引用的名称 可以引用组件的实例 -->
-        console.log(this.$ref.counterRef)
-        <!--  引用到组件的实例之后，就可以调用组件上的 methods 方法 -->
-        this.$ref.myh3.counterRef.add()
+      <!-- 通过 this.$ref.引用的名称 可以引用组件的实例 -->
+      console.log(this.$ref.counterRef)
+      <!--  引用到组件的实例之后，就可以调用组件上的 methods 方法 -->
+      this.$ref.myh3.counterRef.add()
     }
+  }
 }
+</script>
 ```
 
 ### this.$nextTick(cb) 方法
@@ -750,18 +811,26 @@ methods:{
 - 从而能保证 `cb` 回调函数可以操作到最新的 `DOM` 元素
 
 ```vue
-<input v-if="inputVisible" type="text" ref="ipt">
-<button v-else @click="showInput">展示input输入框</button>
+<template>
+  <div>
+    <input v-if="inputVisible" type="text" ref="ipt">
+    <button v-else @click="showInput">展示input输入框</button>
+  </div>
+</template>
 
-methods:{
-	showInput(){
-		this.inputVisible = true
-        <!-- 把对 input 文本框的操作，推迟到下次 DOM 更新之后。否则页面上根本不存在文本框元素 -->
-		this.$nextTick(() => {
-			this.$ref.ipt.focus()
-		})
+<script>
+export default {
+  methods:{
+	  showInput(){
+		  this.inputVisible = true
+      <!-- 把对 input 文本框的操作，推迟到下次 DOM 更新之后。否则页面上根本不存在文本框元素 -->
+		  this.$nextTick(() => {
+			  this.$ref.ipt.focus()
+		  })
     }
+  }
 }
+</script>
 ```
 
 ### 插槽
@@ -909,10 +978,9 @@ methods:{
 
 示例代码如下：
 
-```vue
+```javascript
 //导入需要全局注册的组件
 import Count from '@/components/Count.vue'
-
 //参数1：字符串格式，表示组件的注册名称，参数2：需要被全局注册的组件
 Vue.component('MyCount',Count)
 ```
@@ -1011,41 +1079,57 @@ export default {
 
 父组件向子组件共享数据需要使用自定义属性。
 
-```javascript
+```vue
 <!--父组件-->
-<Son :msg="message" :user="userinfo"></Son>
+<template>
+  <div>
+    <Son :msg="message" :user="userinfo"></Son>
+  </div>
+</template>
 
-data(){
-	return {
-		message:'hello vue',
-		userinfo:{
-			name: 'zs',
-			age: 20
-		}
-	}
+<script>
+export default {
+  data(){
+	  return {
+		  message:'hello vue',
+		  userinfo:{
+			  name: 'zs',
+			  age: 20
+		  }
+	  }
+  }
 }
+</script>
 
 <!--子组件-->
 <template>
 	<div>
-        <h5>Son 组件</h5>
-        <p>父组件传递过来的msg：{{ msg }}</p>
-        <p>父组件传递过来的user：{{ user }}</p>
-    </div>
+    <h5>Son 组件</h5>
+    <p>父组件传递过来的msg：{{ msg }}</p>
+    <p>父组件传递过来的user：{{ user }}</p>
+  </div>
 </template>
 
-props:['msg','user']
-
+<script>
+export default {
+  props:['msg','user']
+}
+</script>
 ```
 
 ####  子 --->父共享数据
 
 子组件向父组件共享数据使用自定义事件。
 
-```javascript
+```vue
 <!--父组件-->
-<Son @numchange="getNewCount"></Son>
+<template>
+  <div>
+    <Son @numchange="getNewCount"></Son>
+  </div>
+</template>
 
+<script>
 export default {
 	data(){
 		return{
@@ -1058,10 +1142,16 @@ export default {
 		}
 	}
 }
+</script>
 
 <!--子组件-->
-<button @click="add()"></button>
+<template>
+  <div>
+    <button @click="add()"></button>
+  </div>
+</template>
 
+<script>
 export default {
 	data(){
 		return{
@@ -1076,6 +1166,7 @@ export default {
 		}
 	}
 }
+</script>
 ```
 
 #### 兄弟之间的数据共享
@@ -1095,19 +1186,25 @@ vue 提供了一个内置的 组件，专门用来实现动态组件的渲染。
 #### 动态组件渲染
 
 ```vue
-<!-- 通过 is 属性，动态指定要渲染的组件 -->
-<component :is="comName"></component>
-
-<!-- 点击按钮，动态切换组件的名称 -->
-  <button @click="comName = 'Left'">展示 Left 组件</button>
+<template>
+  <div>
+    <!-- 通过 is 属性，动态指定要渲染的组件 -->
+    <component :is="comName"></component>
+    <!-- 点击按钮，动态切换组件的名称 -->
+    <button @click="comName = 'Left'">展示 Left 组件</button>
     <button @click="comName = 'Right'">展示 Right 组件</button>
+  </div>
+</template>
 
-    <!--  -->
-    data(){
+<script>
+export default {
+  data(){
     return{
       comName:'Left' //要渲染的组件名称
     }
   }
+}
+</script>  
 ```
 
 ### 保持组件状态 keep-alive
@@ -1115,9 +1212,13 @@ vue 提供了一个内置的 组件，专门用来实现动态组件的渲染。
 默认情况下，切换动态组件时无法保持组件的状态。此时可以使用 vue 内置的 组件保持动态组 件的状态。
 
 ```vue
-<keep-alive>
-  <component :is="comName"></component>
-</keep-alive>
+<template>
+  <div>
+    <keep-alive>
+      <component :is="comName"></component>
+    </keep-alive>
+  </div>
+</template>
 ```
 
 **keep-alive 对应的生命周期函数**
@@ -1129,9 +1230,13 @@ vue 提供了一个内置的 组件，专门用来实现动态组件的渲染。
 `include` 属性用来指定：只有名称匹配的组件会被缓存。多个组件名之间使用英文的逗号分隔
 
 ```vue
-<keep-alive include="MyLeft,MyRight">
-	<component :is="comName"></component>
-</keep-alive>
+<template>
+  <div>
+    <keep-alive include="MyLeft,MyRight">
+	    <component :is="comName"></component>
+    </keep-alive>
+  </div>
+</template>
 ```
 
 ## 六、Vue指令
@@ -1156,63 +1261,88 @@ vue 中的自定义指令分为两类，分别是：
 可以在 `directives` 节点下声明私有自定义指令。
 
 ```vue
-//基本使用
-<h1 v-color>App 组件</h1>
+<template>
+  <div>
+    <!-- 基本使用 -->
+    <h1 v-color>App 组件</h1>
+  </div>
+</template>
 
-directives: {
-	color: {
-		//为绑定到的 HTML 元素设置红色的文字
-        //bind 函数只调用 1 次：当指令第一次绑定到元素时调用，当 DOM 更新时 bind 函数不会被触发
-		bind(el) {
-			//形参中的 el 是绑定了此指令的、原生的 DOM 对象
-			el.style.color = 'red'
-		}
-	}
+<script>
+export default {
+  directives: {
+	  color: {
+	  	// 为绑定到的 HTML 元素设置红色的文字
+      // bind 函数只调用 1 次：当指令第一次绑定到元素时调用，当 DOM 更新时 bind 函数不会被触发
+		  bind(el) {
+			  //形参中的 el 是绑定了此指令的、原生的 DOM 对象
+			  el.style.color = 'red'
+		  }
+	  }
+  }
 }
+</script>
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-//为自定义指令动态绑定参数值
-<h1 v-color="color">App 组件</h1>
+<template>
+  <div>
+    <!-- 为自定义指令动态绑定参数值 -->
+    <h1 v-color="color">App 组件</h1>
+  </div>
+</template>
 
-data(){
+<script>
+export default {
+  data(){
     return {
         color: 'blue'
     }
-},
-directives: {
-	color: {
-		//在声明自定义指令时，可以通过形参中的第二个参数，来接收指令的参数值
-		bind(el,binding) {
-			//通过 binding 对象的 value 属性，获取动态的参数值
-			el.style.color = binding.value
-		}
-	}
-}    
+  },
+  directives: {
+	  color: {
+		  // 在声明自定义指令时，可以通过形参中的第二个参数，来接收指令的参数值
+		  bind(el,binding) {
+			  // 通过 binding 对象的 value 属性，获取动态的参数值
+			  el.style.color = binding.value
+		  }
+	  }
+  }  
+}
+</script>
+  
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 // bind 函数和 update 函数
-directives: {
-	color: {
-		//bind 函数只调用 1 次：当指令第一次绑定到元素时调用，当 DOM 更新时 bind 函数不会被触发
-		bind(el,binding) {
-			//通过 binding 对象的 value 属性，获取动态的参数值
-			el.style.color = binding.value
-		},
-        //update 函数会在每次 DOM 更新时被调用
-        update(el,binding) {
-			el.style.color = binding.value
-		}
-	}
-}  
+<script>
+export default {
+  directives: {
+	  color: {
+		  // bind 函数只调用 1 次：当指令第一次绑定到元素时调用，当 DOM 更新时 bind 函数不会被触发
+		  bind(el,binding) {
+			  // 通过 binding 对象的 value 属性，获取动态的参数值
+			  el.style.color = binding.value
+		  },
+      // update 函数会在每次 DOM 更新时被调用
+      update(el,binding) {
+			  el.style.color = binding.value
+		  }
+	  }
+  }  
+}
+</script>
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 // 函数简写
-//如果 bind 和 update 函数中的逻辑完全相同，则对象格式的自定义指令可以简写成函数格式
-directives: {
-	color(el,binding) {
-		el.style.color = binding.value
-	}
-}  
+<script>
+export default {
+  //如果 bind 和 update 函数中的逻辑完全相同，则对象格式的自定义指令可以简写成函数格式
+  directives: {
+	  color(el,binding) {
+		  el.style.color = binding.value
+	  }
+  }  
+}
+</script>
 ```
 
 - 在使用自定义指令时，需要加上 v- 前缀
@@ -1224,7 +1354,7 @@ directives: {
 
 全局共享的自定义指令需要通过“`Vue.directive()`”进行声明
 
-```vue
+```javascript
 //参数1：字符串，表示全局自定义指令的名字
 //参数2：对象，用来接收指令的参数值
 Vue.directive('color',function(el,binding){
@@ -1269,7 +1399,7 @@ Vue.directive('color',function(el,binding){
 
 <!-- 过滤器传参 -->
 <p>{{ message | filterA(arg1,arg2) }}</p>
-<!-- 第一个参数永远是 “管道符” 前面待处理的值，从第二个参数开始，才是调用过滤器是传递过来的 arg1 和 arg2 参数 -->
+<!-- 第一个参数永远是 “管道符” 前面待处理的值，从第二个参数开始，才是调用过滤器时传递过来的 arg1 和 arg2 参数 -->
 Vue.filter('filterA',(msg,arg1,arg2) => {
 	//过滤器代码逻辑
 })
@@ -1280,20 +1410,21 @@ Vue.filter('filterA',(msg,arg1,arg2) => {
 
 在创建 `vue` 实例期间，可以在 `filters` 节点中定义过滤器，示例代码如下：
 
-```javascript
-//私有过滤器
-const vm = new Vue({
-  el: '#app',
-  data: {
-    message: 'hello vue.js',
-    info: 'title info'
+```vue
+<script>
+export default {
+  data () {
+    return {
+      message: 'hello vue.js',
+      info: 'title info'
+    }
   },
   filters: {
     capitalize(str){ //str字符串转换成大写的过滤器
       return str.toUpperCase()
     }
   }
-})
+}
 ```
 
 在 filters 节点下定义的过滤器，称为“私有过滤器”，因为它只能在当前 vm 实例所控制的 el 区域内使用
@@ -1509,36 +1640,43 @@ const routes = [
 #### 标签式
 
 ```vue
-<el-aside width="200px">
-    <!-- to 要跳转去的路由路径 -->
-    <router-link to="/c1/p1">P1</router-link>
-    <router-link to="/c1/p2">P2</router-link>
-    <router-link to="/c1/p3">P3</router-link>
-</el-aside>
+<template>
+  <div>
+    <el-aside width="200px">
+      <!-- to 要跳转去的路由路径 -->
+      <router-link to="/c1/p1">P1</router-link>
+      <router-link to="/c1/p2">P2</router-link>
+      <router-link to="/c1/p3">P3</router-link>
+    </el-aside>
+  </div>
+</template>
 ```
 
 #### 编程式
 
 ```vue
-<el-header>
-    <el-button type="primary" icon="el-icon-edit" 
+<template>
+  <div>
+    <el-header>
+      <el-button type="primary" icon="el-icon-edit" 
                circle size="mini" @click="jump('/c1/p1')"></el-button>
-    <el-button type="success" icon="el-icon-check" 
+      <el-button type="success" icon="el-icon-check" 
                circle size="mini" @click="jump('/c1/p2')"></el-button>
-    <el-button type="warning" icon="el-icon-star-off" 
+      <el-button type="warning" icon="el-icon-star-off" 
                circle size="mini" @click="jump('/c1/p3')"></el-button>
-</el-header>
+    </el-header>
+  </div>
+</template>
 
 <script>
-const options = {
-    methods : {
-        jump(url) {
-            this.$router.push(url);//跳转到指定 hash 地址，并增加一条历史记录
-            //this.$router.replace(url)
-        }
+export default {
+  methods : {
+    jump(url) {
+      this.$router.push(url);// 跳转到指定 hash 地址，并增加一条历史记录
+      // this.$router.replace(url)
     }
+  }
 }
-export default options;
 </script>
 ```
 
@@ -1549,11 +1687,11 @@ export default options;
 - this.$router.go(数值 n) 实现导航历史前进、后退
 
 ```vue
-this.$router.go(-1) //回退到之前的组件页面
+this.$router.go(-1) // 回退到之前的组件页面
 
-//在实际开发中，一般只会前进和后退一层页面。因此 vue-router 提供了如下两个便捷方法
-this.$router.back(-1) //在历史记录中，后退到上一个页面
-this.$router.forward(-1) //在历史记录中，前进到下一个页面
+// 在实际开发中，一般只会前进和后退一层页面。因此 vue-router 提供了如下两个便捷方法
+this.$router.back(-1) // 在历史记录中，后退到上一个页面
+this.$router.forward(-1) // 在历史记录中，前进到下一个页面
 ```
 
 #### 导航菜单
@@ -1774,19 +1912,18 @@ export default new Vuex.Store({
   </div>
 </template>
 <script>
-  const options = {
-    methods: {
-      update(){
-        this.$store.commit('updateName', this.name);
-      }
-    },
-    data () {
-      return {
-        name:''
-      }
+export default {
+  data () {
+    return {
+      name:''
+    }
+  },
+  methods: {
+    update(){
+      this.$store.commit('updateName', this.name);
     }
   }
-  export default options;
+}
 </script>
 ```
 
@@ -1839,12 +1976,11 @@ export default new Vuex.Store({
 <script>
   // 引入 mapState
   import { mapState } from 'vuex'
-  const options = {
+  export default {
     computed: {
       ...mapState(['name', 'age'])
     }
   }
-  export default options;
 </script>
 ```
 
@@ -1863,20 +1999,19 @@ export default new Vuex.Store({
 </template>
 <script>
 import {mapMutations} from 'vuex'
-const options = {
-    methods: {
-        ...mapMutations(['updateName']),
-        testMapMutations () {
-            this.updateName(this.name)
-        }
-    },
-    data () {
-        return {
-            name:''
-        }
+export default {
+  data () {
+    return {
+      name:''
     }
+  },
+  methods: {
+    ...mapMutations(['updateName']),
+    testMapMutations () {
+      this.updateName(this.name)
+    }
+  }
 }
-export default options;
 </script>
 ```
 
@@ -1948,12 +2083,11 @@ export default new Vuex.Store({
 </template>
 <script>
   import { mapActions } from 'vuex'
-  const options = {
+  export default {
     methods: {
       ...mapActions(['updateServerName'])
     }
   }
-  export default options;
 </script>
 
 ```
@@ -2008,8 +2142,8 @@ import axios from 'axios'
 </template>
 <script>
 import axios from 'axios'
-const options = {
-    methods: {
+export default {
+   methods: {
         async sendReq() {
             // 1. 演示 get, post
             // const resp = await axios.post('/api/a2');
@@ -2056,8 +2190,7 @@ const options = {
             console.log(resp);
         }
     }
-};
-export default options;
+}
 </script>
 
  
