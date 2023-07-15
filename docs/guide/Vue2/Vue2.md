@@ -2272,3 +2272,157 @@ _axios.interceptors.response.use(
   }
 );
 ```
+
+## 十一、Vue数组常用方法
+
+**vue 修改数组的数据时必须用七个数组方法，还有下面的 Vue.set 和 this.$set **
+
+push()、pop()、shift()、unshift()、splice()、sort()、reverse()
+
+### push()、pop（）
+
+```js
+// push() 向数组的末尾添加一个或多个元素，并返回新的数组长度。原数组改变。
+ var arr=[1,2,3,4,5,6,7,8,9]
+        arr.push(10000,10001,10002)
+        console.log(arr.toString()) // 1,2,3,4,5,6,7,8,9,10000,10001,10002
+
+// pop() 删除并返回数组的最后一个元素，若该数组为空，则返回 undefined。原数组改变。
+  var arr=[1,2,3,4,5,6,7,8,9]
+        arr.pop()
+        console.log(arr.toString()) // 1,2,3,4,5,6,7,8
+```
+
+### shift()、unshift()
+
+```js
+// shift() 删除数组的第一项，并返回第一个元素的值。若该数组为空，则返回 undefined。原数组改变。
+var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+      var value = arr.shift();
+      console.log(arr.toString()); // 2,3,4,5,6,7,8,9
+      console.log(value) // 1
+  
+// unshift() 向数组的开头添加一个或多个元素，并返回新的数组长度。原数组改变。
+var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+      var value = arr.unshift(0);
+      console.log(arr.toString()); // 0,1,2,3,4,5,6,7,8,9
+      console.log(value) // 10
+```
+
+### splice()
+
+```js
+// splice() 改变数组结构  分别有一二三个参数的情况
+// 传递一个参数的时候表示从这个参数的位置开始一直截取到最后(索引从0开始,闭合区间) 原数组改变
+   var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+      var value = arr.splice(3);
+      console.log(arr); // [1, 2, 3]
+      console.log(value) // [4, 5, 6, 7, 8, 9]
+
+// 传递两个参数，第一个截取起始位置，第二个截取的个数(索引从0开始,闭合区间)；原数组改变
+// 如果第二个参数为0，则表示不截取，返回的空数组，原来的数组不变
+   var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+      var value = arr.splice(3,2);
+      console.log(arr)// [1, 2, 3, 6, 7, 8, 9]
+      console.log(value)// [4, 5]
+
+// 传三个参数 前两个参数跟上面相同  
+// 第二个参数为0时表示在下标为2的位置，截取0个数组，在下标为2的位置添加第三个参数(索引从0开始)
+    var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9]; 
+    var value = arr.splice(2,0,100);
+    console.log(value);//[]
+    console.log(arr);//[1, 2, 100, 3, 4, 5, 6, 7, 8, 9]
+
+// 当第二个参数不为0的时候 第三个参数代表删除后在删除的起始下标处添加的新元素
+    var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9]; 
+    var value = arr.splice(2,3,100);
+    console.log(value);//[3,4,5]
+    console.log(arr);//[1, 2, 100, 6, 7, 8, 9]
+```
+
+### sort()、reverse()
+
+```js
+// sort() 对数组元素进行排序。按照字符串 UniCode 码排序，原数组改变。
+  var arr = [5, 2, 1, 4, 9, 8, 7, 6, 3];
+    var sortNum = function(a,b){
+        return a-b // b-a 为倒序
+    }
+    arr.sort(sortNum)
+    console.log(arr)// [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+  var sortNum = function(a,b){
+        return a.param - b.param // b-a为倒序
+    }
+
+
+// reverse()，将数组倒序。原数组改变。
+    var arr = [5, 2, 1, 4, 9, 8, 7, 6, 3];
+    arr.reverse()
+    console.log(arr) // [3, 6, 7, 8, 9, 4, 1, 2, 5]
+```
+
+
+
+## 十二、常见问题及解决
+
+### 响应式丢失
+
+**原因：** vue 给每个属性都加上了 get、set  方法，vue 只有在使用 set 方法改变属性值的时候才会更新 dom  
+
+**响应式：**就是 vue 监测数据改变就重新更新 dom
+
+**解决方法**
+
+**Vue.set和this.$set**
+
+他俩作用 用法俩一模一样
+
+1. 对象中后追加的属性，Vue默认不做响应式处理
+2. 如需给后添加的属性做响应式，请使用如下API：
+
+- `Vue.set(target,propertyName/index,value)`
+
+  `this.$set(target,propertyName/index,value)`
+
+- 使用场景: `data`中定义一个`student`对象(或数组)    在`methods`中给对象加个属性`age`  **这个age不是响应式的(不会生成age的set和get，改变值后更新不到页面)**  这时候就需要这两个方法   
+
+- **注意**  这俩方法不能操作`data`里面的直接属性    只能操作里面的对象或数组  
+
+```vue
+<template>
+	<div id="mi">
+		<button @click="dianji">点我</button>
+    	<h1>{{Student.name}}</h1>
+    	<h1>{{Student.age}}</h1>
+	</div>
+</template>
+<script>
+export default {
+    data () {
+        return {
+            Student: {name: "张三"},
+        }
+    },
+    methods: {
+        dianji() {
+            // 给 student 对象，添加 age 属性，值为 12
+            Vue.set(this.Student, 'age', 12)
+            // 或用如下写法
+            this.$set(this.Student, 'age', 12)
+        }
+    }
+}
+</script>
+```
+
+::: tip
+
+Vue.set() 和 this.$set() 这两个 api 的实现原理基本一模一样，都是使用了 set 函数。
+
+区别在于:
+
+- Vue.set() 是将 set 函数绑定在 Vue 构造函数上。
+- this.$set() 是将 set 函数绑定在 Vue 原型上。
+
+:::
